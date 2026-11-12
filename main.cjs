@@ -19,7 +19,7 @@ const Selection=require('./selection.cjs');
 const {createUndo}=require('./undo.cjs');
 const undoManager=createUndo({trash:file=>shell.trashItem(file)});
 const activeJobs=new Map(),sessionFiles=new Set();
-const Recipes=require('./recipes.cjs');let watcher;
+const Recipes=require('./recipes.cjs');let watcher,updates;
 
 const R = f => path.join(__dirname, 'renderer', f);
 const ICON_PNG = path.join(__dirname, 'build', 'icon.png');
@@ -264,11 +264,12 @@ let nativeDrop;
 
 // ---------- settings ----------
 const settingsView = () => ({ paused: store.data.paused, theme: store.data.theme, effectiveTheme: effectiveTheme(), contextMenu: store.data.contextMenu,
-  openAtLogin: app.getLoginItemSettings({ args: ['--hidden'] }).openAtLogin, platform: process.platform, version: app.getVersion(),
+  openAtLogin: app.getLoginItemSettings({ args: ['--hidden'] }).openAtLogin, platform: process.platform, version: app.getVersion(),automaticUpdates:store.data.automaticUpdates,updates:updates?.view(),
   topMenu: topMenuState, menuOffered: store.data.menuOffered, features: store.data.features,preferences:store.data.preferences,shortcut:shortcutState,engines:require('./engine-packs.cjs').status(),recipes:store.data.recipes,watchFolders:store.data.watchFolders,watchStatus:watcher?.view()||[],onboarding:store.data.onboarding,autoTutorial:!testProfile,extended:require('./engines/extended.cjs').status() });
 function setSettings(patch) {
   const next = {};
   if (typeof patch.paused === 'boolean') next.paused = patch.paused;
+  if(typeof patch.automaticUpdates==='boolean'){next.automaticUpdates=patch.automaticUpdates;updates?.start(next.automaticUpdates&&!testProfile);}
   if (['system', 'light', 'dark'].includes(patch.theme)) next.theme = patch.theme;
   if (typeof patch.contextMenu === 'boolean') next.contextMenu = patch.contextMenu;
   if (patch.menuOffered === true) next.menuOffered = true;
@@ -417,6 +418,11 @@ ipcMain.handle('pick-input-folder',async()=> (await dialog.showOpenDialog({prope
 ipcMain.handle('picks:clear',()=>{store.set({picks:{}});return settingsView();});
 ipcMain.handle('engines:import',async()=>{const file=(await dialog.showOpenDialog({properties:['openFile'],filters:[{name:'Filerrrr engine pack',extensions:['zip']}]})).filePaths[0];if(file)await require('./engine-packs.cjs').install(file);return settingsView();});
 ipcMain.handle('watch:status',()=>watcher?.view()||[]);
+ipcMain.handle('updates:status',()=>updates?.view());
+ipcMain.handle('updates:check',()=>updates?.check());
+ipcMain.handle('updates:download',()=>updates?.download());
+ipcMain.handle('updates:install',()=>{if(activeJobs.size||watcher?.view().some(rule=>rule.status==='Converting'))throw new Error('Wait for conversions to finish before restarting');updates?.install();});
+ipcMain.handle('updates:releases',()=>shell.openExternal(require('./updates.cjs').releaseUrl));
 ipcMain.handle('external:choose',async(_event,key)=>{const names={office:'soffice.exe',books:'ebook-convert.exe',image:'magick.exe',hwp:'rhwp.exe'};if(!names[key])throw new Error('Unknown converter');const file=(await dialog.showOpenDialog({title:`Choose ${names[key]}`,properties:['openFile'],filters:[{name:names[key],extensions:['exe']}]})).filePaths[0];if(file){if(path.basename(file).toLowerCase()!==names[key])throw new Error(`Choose ${names[key]}`);store.set({external:{...store.data.external,[key]:file}});require('./engines/extended.cjs').configure(store.data.external);}return settingsView();});
 ipcMain.handle('support:log',async()=>{try{const handle=await fs.promises.open(logFile,'r');try{const stat=await handle.stat(),size=Math.min(stat.size,256*1024),buffer=Buffer.alloc(size);await handle.read(buffer,0,size,stat.size-size);return buffer.toString('utf8');}finally{await handle.close();}}catch{return 'No errors have been logged.';}});
 ipcMain.handle('support:notices',async()=>{try{return await fs.promises.readFile(path.join(__dirname,'THIRD-PARTY-NOTICES.txt'),'utf8');}catch{return 'Third-party notices are not generated in this development checkout. Run npm run notices.';}});
@@ -451,12 +457,13 @@ app.on('second-instance', (_e, argv) => {
   const paths = contextMenu.pathsFromArgv(argv);
   paths.length ? receivePaths(paths) : showWindow();
 });
-app.on('before-quit', () => { quitting = true;watcher?.stop();activeJobs.forEach(job=>job.abort());killAll(); try { store.flush(); } catch { /* best effort */ } });
+app.on('before-quit', () => { quitting = true;updates?.stop();watcher?.stop();activeJobs.forEach(job=>job.abort());killAll(); try { store.flush(); } catch { /* best effort */ } });
 
 app.whenReady().then(() => {
   app.setAppUserModelId('com.filerrrr.app');
   logFile = path.join(app.getPath('userData'), 'filerrrr.log');
   store = createStore(path.join(app.getPath('userData'), 'filerrrr.json'));
+  updates=require('./updates.cjs').create({packaged:app.isPackaged,config:require('./updates.cjs').readConfig(process.resourcesPath),notify:state=>send(win,'updates:status',state),log});updates.start(store.data.automaticUpdates&&!testProfile);
   require('./engine-packs.cjs').configure(path.join(app.getPath('userData'),'engines'));
   require('./engines/extended.cjs').configure(store.data.external);
   watcher=require('./watch-folders.cjs').create({rules:()=>store.data.watchFolders,recipes:()=>store.data.recipes,run:async(input,recipe,signal)=>{const results=await run([input],'formats',recipe.target,()=>{},{...Recipes.options(recipe),external:store.data.external,signal});record(results,'formats',recipe.target);results.filter(result=>result.error).forEach(result=>log('watch folder',result.input,result.error));return results;},onUpdate:status=>send(win,'watch:status',status)});

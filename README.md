@@ -31,4 +31,4 @@ The Full installer includes the bundled offline engines. Core uses the matching,
 
 Loose-file packaging is intentional: previous packaged measurements found lower idle memory with this layout. Turning ASAR on requires fresh packaged native-module, PDF/OCR, worker and engine-pack tests. An archive is not a security boundary or code signing.
 
-No signing certificate, public update feed or remote Git repository is configured. Do not treat a local build or a generated winget manifest as a published release. Third-party notices are bundled in `THIRD-PARTY-NOTICES.txt`; dependency licence files remain with the installed packages.
+Installer hosting is configured at [Filerrrr Releases](https://github.com/Aaad1tyaaA/filerrrr-releases/releases). The 1.2.2 build is an unsigned preview; signed automatic downloads remain gated until a real publisher certificate is issued. See [RELEASE.md](RELEASE.md) for signing, update behavior, validation and remaining gates. Development source has no remote Git repository configured. Third-party notices are bundled in `THIRD-PARTY-NOTICES.txt`; dependency licence files remain with the installed packages.

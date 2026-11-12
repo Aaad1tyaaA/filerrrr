@@ -73,6 +73,7 @@ const sw = (id, v) => $(id).setAttribute('aria-checked', String(v));
 let setThemeSeg;
 function showSettings(s) {
   settings = s; setTheme(s.effectiveTheme);
+  sw('automaticUpdates',s.automaticUpdates!==false);renderUpdates(s.updates);
   sw('gestureBtn', !s.paused); sw('sGesture', !s.paused); sw('sMenu', s.contextMenu); sw('sLogin', s.openAtLogin);
   setThemeSeg && setThemeSeg(s.theme);
   $('rowMenu').hidden = s.platform !== 'win32';
@@ -81,7 +82,7 @@ function showSettings(s) {
   $('topBtn').disabled = !!t.busy;
   $('topBtn').textContent = t.busy ? 'Waiting…' : t.registered ? 'Remove' : 'Add';
   $('topNote').textContent = t.registered ? 'Shown at the top of the right-click menu.'
-    : 'Puts “Convert with Filerrrr” at the top of the right-click menu. Windows asks for administrator approval once.';
+    : 'Puts “Convert with Filerrrr” at the top of the right-click menu. Unsigned builds need administrator approval once.';
   $('offer').hidden = !t.available || t.registered || s.menuOffered;
   $('ver').textContent = `Filerrrr ${s.version}`;
   document.body.dataset.sizeComparison = String(s.features?.sizeComparison !== false);
@@ -126,6 +127,11 @@ $('forgetPicks').onclick=()=>api.clearPicks().then(showSettings);
 $('importEngines').onclick=async()=>{const b=$('importEngines');b.disabled=true;$('engineMessage').textContent='Checking engine pack…';try{showSettings(await api.importEngines());$('engineMessage').textContent='Engines ready.';}catch(e){$('engineMessage').textContent=e.message;}finally{b.disabled=false;}};
 FeatureSettings.init(showSettings);
 Workflows.init({saved:showSettings,toast,run:(files,pick)=>{if(pal.isOpen)return;pending=files;cx=innerWidth/2;cy=Math.min(innerHeight/2,380);palEl.style.left=cx-Palette.CENTER+'px';palEl.style.top=cy-Palette.CENTER+'px';pal.open({mode:'click',label:files.length>1?`${files.length} FILES`:(Formats.extOf(files[0])||'FILE').toUpperCase(),targets:[],tools:[]});pal.disc.progress(0);convert(pick);}});
+function renderUpdates(value){const state=value||{phase:'blocked',message:'Automatic updates will be available after the first signed release.'};$('updateStatus').textContent=state.message;$('checkUpdates').disabled=['blocked','checking','downloading','ready'].includes(state.phase);$('downloadUpdate').hidden=state.phase!=='available';$('installUpdate').hidden=state.phase!=='ready';$('updateProgress').hidden=state.phase!=='downloading';$('updateProgress').value=state.percent||0;}
+api.onUpdates(renderUpdates);
+$('automaticUpdates').onclick=()=>api.setSettings({automaticUpdates:!settings.automaticUpdates}).then(showSettings);
+for(const [id,action]of [['checkUpdates','checkUpdates'],['downloadUpdate','downloadUpdate'],['installUpdate','installUpdate']])$(id).onclick=async()=>{try{const state=await api[action]();if(state)renderUpdates(state);}catch(error){toast(error.message,true);}};
+$('openReleases').onclick=()=>api.openReleases();
 $('clearBtn').onclick = async () => { hist = await api.clearHistory(); render(); drawer(false); toast('History cleared'); };
 $('pruneBtn').onclick=async()=>{const result=await api.pruneHistory();hist=result.history;render();toast(result.removed?`Removed ${result.removed} missing history entries`:'No missing history entries');};
 

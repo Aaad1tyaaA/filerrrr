@@ -4,6 +4,7 @@ release-core/
 release-manifests/
 build/menu/
 build/core-builder.json
+build/signed-builder.json
 build/*.dll
 build/*.exe
 *.obj

@@ -4,7 +4,7 @@ const fs = require('fs');
 const Features = require('./features.js');
 const Preferences=require('./preferences.cjs'),Picks=require('./picks.cjs');
 
-const DEFAULTS = { paused: false, theme: 'system', contextMenu: true, menuOffered: false, converted: 0, saved: 0, history: [], features: Features.defaults,preferences:Preferences.defaults,picks:{},recipes:[],watchFolders:[],onboarding:false,external:{} };
+const DEFAULTS = { paused: false, theme: 'system', contextMenu: true, menuOffered: false, converted: 0, saved: 0, history: [], features: Features.defaults,preferences:Preferences.defaults,picks:{},recipes:[],watchFolders:[],onboarding:false,external:{},automaticUpdates:true };
 
 function sanitize(raw) {
   const d = { ...DEFAULTS };
@@ -14,6 +14,7 @@ function sanitize(raw) {
   d.external=Object.fromEntries(['office','books','image','hwp'].filter(key=>typeof raw?.external?.[key]==='string'&&require('path').isAbsolute(raw.external[key])).map(key=>[key,raw.external[key]]));
   if (!raw || typeof raw !== 'object') return d;
   if (typeof raw.paused === 'boolean') d.paused = raw.paused;
+  if(typeof raw.automaticUpdates==='boolean')d.automaticUpdates=raw.automaticUpdates;
   if (['system', 'light', 'dark'].includes(raw.theme)) d.theme = raw.theme;
   if (typeof raw.contextMenu === 'boolean') d.contextMenu = raw.contextMenu;
   if (typeof raw.menuOffered === 'boolean') d.menuOffered = raw.menuOffered;

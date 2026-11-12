@@ -1,7 +1,7 @@
 {
   "name": "filerrrr",
   "productName": "Filerrrr",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Convert files on your PC: hold Ctrl, drag, pick a format on the palette.",
   "main": "main.cjs",
   "private": true,
@@ -27,6 +27,7 @@
     "@tmcw/togeojson": "^7.1.3",
     "@xmldom/xmldom": "^0.9.12",
     "ag-psd": "^34.1.0",
+    "electron-updater": "6.8.11",
     "exceljs": "^4.4.0",
     "fast-xml-parser": "^5.12.0",
     "ffmpeg-static": "^5.3.0",
@@ -66,6 +67,7 @@
     },
     "files": [
       "main.cjs",
+      "updates.cjs",
       "preferences.cjs",
       "recipes.cjs",
       "watch-folders.cjs",

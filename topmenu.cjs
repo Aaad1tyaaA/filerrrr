@@ -15,7 +15,7 @@ const quote = s => `'${String(s).replace(/'/g, "''")}'`; // PowerShell single-qu
 const encode = script => Buffer.from(script, 'utf16le').toString('base64');
 // Runs `inner` as administrator (one UAC prompt). Exit 0 = done, 1223 = the prompt was declined, else failed.
 const elevated = inner => `try { $p = Start-Process powershell -Verb RunAs -WindowStyle Hidden -PassThru -Wait -ArgumentList '-NoProfile','-EncodedCommand','${encode(`try { ${inner} -ErrorAction Stop; exit 0 } catch { exit 1 }`)}'; exit $p.ExitCode } catch { exit 1223 }`;
-const registerScript = dir => elevated(`Add-AppxPackage -Path ${quote(files(dir).msix)} -ExternalLocation ${quote(dir)} -AllowUnsigned`);
+const registerScript = dir => `if ((Get-AuthenticodeSignature -LiteralPath ${quote(files(dir).msix)}).Status -eq 'Valid') { try { Add-AppxPackage -Path ${quote(files(dir).msix)} -ExternalLocation ${quote(dir)} -ErrorAction Stop; exit 0 } catch { exit 1 } } else { ${elevated(`Add-AppxPackage -Path ${quote(files(dir).msix)} -ExternalLocation ${quote(dir)} -AllowUnsigned`)} }`;
 const unregisterScript = () => `Get-AppxPackage -Name ${NAME} | Remove-AppxPackage -ErrorAction Stop`;
 const repairScript = dir => `Get-AppxPackage -Name ${NAME} | Where-Object { $_.Status -eq 'Ok' } | ForEach-Object { Add-AppxPackage -Register (Join-Path $_.InstallLocation 'AppxManifest.xml') -DisableDevelopmentMode -ExternalLocation ${quote(dir)} -ErrorAction Stop }`;
 

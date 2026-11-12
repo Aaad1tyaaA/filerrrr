@@ -46,6 +46,7 @@ contextBridge.exposeInMainWorld('api', {
   readLog:()=>ipcRenderer.invoke('support:log'),notices:()=>ipcRenderer.invoke('support:notices'),
   tutorialSample:()=>ipcRenderer.invoke('tutorial:sample'),imagePreview:file=>ipcRenderer.invoke('editor:preview',file),
   chooseExternal:key=>ipcRenderer.invoke('external:choose',key),
+  updateStatus:()=>ipcRenderer.invoke('updates:status'),checkUpdates:()=>ipcRenderer.invoke('updates:check'),downloadUpdate:()=>ipcRenderer.invoke('updates:download'),installUpdate:()=>ipcRenderer.invoke('updates:install'),openReleases:()=>ipcRenderer.invoke('updates:releases'),onUpdates:on('updates:status'),
 });
 
 addEventListener('error', e => ipcRenderer.send('renderer-error', `${e.message} @ ${e.filename}:${e.lineno}`));
