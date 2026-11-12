@@ -1,0 +1,51 @@
+const test = require('node:test'), assert = require('node:assert/strict');
+const fs = require('fs'), os = require('os'), path = require('path');
+const { PDFDocument, StandardFonts } = require('pdf-lib');
+const { inspect } = require('../capabilities.cjs');
+const { run } = require('../convert.cjs');
+const Features = require('../features.js');
+let dir, text, scan;
+test.before(async () => {
+  dir = fs.mkdtempSync(path.join(os.tmpdir(), 'filerrrr-capabilities-'));
+  text = path.join(dir, 'text.pdf'); scan = path.join(dir, 'scan.pdf');
+  const doc = await PDFDocument.create(), font = await doc.embedFont(StandardFonts.Helvetica);
+  doc.addPage().drawText('Editable text', {font}); fs.writeFileSync(text, await doc.save());
+  const scanned = await PDFDocument.create(); scanned.addPage().drawRectangle({x:10,y:10,width:50,height:50});
+  fs.writeFileSync(scan, await scanned.save());
+});
+test.after(() => fs.rmSync(dir, {recursive:true,force:true}));
+test('PDF content checks enable image routes and reject empty text exports', async () => {
+  const readable = await inspect([text]);
+  assert.ok(readable.targets.includes('DOCX'));
+  const scanned = await inspect([scan],{ocr:false});
+  assert.deepEqual(scanned.targets, ['PNG','JPG']);
+  assert.match(scanned.choices.find(c=>c.value==='DOCX').reason, /English scan recognition/);
+  assert.ok(!scanned.choices.some(c=>c.value==='PDF'||c.value==='EPUB'),'impossible and same-format choices are hidden');
+  const [result] = await run([scan], 'formats', 'DOCX',()=>{},{ocr:false});
+  assert.match(result.error, /English scan recognition/);
+  assert.ok(!fs.existsSync(path.join(dir, 'scan.docx')), 'failed text export leaves no empty document');
+});
+test('preflight checks damage, missing files, mixed content and feature flags', async () => {
+  const broken = path.join(dir,'broken.pdf'); fs.writeFileSync(broken,'not a PDF');
+  const invalid = await inspect([broken]);
+  assert.equal(invalid.targets.length,0); assert.equal(invalid.tools.length,0);
+  assert.match(invalid.note,/damaged|PDF/);
+  assert.match((await inspect([path.join(dir,'missing.pdf')])).note,/no longer exists/);
+  assert.ok(!(await inspect([text,scan],{ocr:false})).targets.includes('DOCX'));
+  const disabled = await inspect([text], {'convert.pdf':false});
+  assert.equal(disabled.targets.length,0);
+  assert.match(disabled.choices.find(c=>c.value==='DOCX').reason,/Disabled/);
+  assert.ok(!Features.choicesFor(['jpg']).choices.some(c=>c.value==='JPG'));
+});
+test('PDF export resolution is configurable and invalid settings fall back safely', async () => {
+  const { exportOptions } = require('../engines/pdf.cjs');
+  assert.deepEqual(exportOptions({dpi:Infinity,quality:'100'}), {dpi:144,quality:90,ocr:true});
+  assert.deepEqual(exportOptions({dpi:300,quality:70,ocr:false}), {dpi:300,quality:70,ocr:false});
+  const sharp = require('sharp');
+  const [small] = await run([text], 'formats', 'PNG', () => {}, {dpi:72});
+  const [large] = await run([text], 'formats', 'PNG', () => {}, {dpi:144});
+  assert.ok(!small.error, small.error); assert.ok(!large.error, large.error);
+  const a = await sharp(small.output).metadata(), b = await sharp(large.output).metadata();
+  assert.ok(Math.abs(b.width-a.width*2)<=1);
+  assert.ok(Math.abs(b.height-a.height*2)<=1);
+});

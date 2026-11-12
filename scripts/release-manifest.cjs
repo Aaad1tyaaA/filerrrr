@@ -1,0 +1,5 @@
+const fs=require('fs'),path=require('path'),crypto=require('crypto');
+const [installer,url]=process.argv.slice(2);if(!installer||!url||!/^https:\/\//.test(url))throw new Error('Provide a tested installer path and its final HTTPS download URL');
+const version=require('../package.json').version,bytes=fs.readFileSync(installer),hash=crypto.createHash('sha256').update(bytes).digest('hex').toUpperCase(),root=path.resolve(__dirname,'../release-manifests');fs.mkdirSync(root,{recursive:true});
+fs.writeFileSync(path.join(root,'Filerrrr.Filerrrr.yaml'),`PackageIdentifier: Filerrrr.Filerrrr\nPackageVersion: ${version}\nPackageLocale: en-US\nPublisher: Filerrrr\nPackageName: Filerrrr\nLicense: Proprietary\nShortDescription: Local desktop file conversion\nInstallerType: nullsoft\nInstallModes:\n- silent\n- silentWithProgress\nInstallers:\n- Architecture: x64\n  InstallerUrl: ${JSON.stringify(url)}\n  InstallerSha256: ${hash}\nManifestType: singleton\nManifestVersion: 1.9.0\n`);
+console.log('Generated local winget manifest. Verify publisher, licence and hosting before submission. Nothing was published.');

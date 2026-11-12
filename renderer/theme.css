@@ -1,0 +1,201 @@
+/* Filerrrr: quiet neutral surfaces, system fonts, one warm accent. Dots live only on the disc. */
+:root {
+  --bg: #0e0e0f; --surface: #171719; --surface-2: #1e1e21; --sunken: #0a0a0b;
+  --fg: 255 255 255; --ink: #ededec; --ink-2: #a3a3a0; --ink-3: #6e6e6b;
+  --line: rgba(255, 255, 255, .07); --line-2: rgba(255, 255, 255, .13);
+  --acc: 255 92 56; --ok-rgb: 110 214 150; --bad-rgb: 255 92 56;
+  --ui: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  --display: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
+  --mono: 'Cascadia Mono', Consolas, monospace;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+  --shadow: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 12px 32px -16px rgba(0, 0, 0, .7);
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --bg: #f4f3f0; --surface: #ffffff; --surface-2: #f0efec; --sunken: #e9e8e4;
+  --fg: 20 20 20; --ink: #191918; --ink-2: #5f5f5b; --ink-3: #8c8c87;
+  --line: rgba(0, 0, 0, .07); --line-2: rgba(0, 0, 0, .13);
+  --acc: 226 64 30; --ok-rgb: 22 140 76; --bad-rgb: 214 52 30;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .05), 0 12px 32px -18px rgba(0, 0, 0, .25);
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+/* Windows draws light scrollbars inside Electron regardless of color-scheme */
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line-2); border: 3px solid transparent; border-radius: 8px; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background-color: var(--ink-3); }
+::-webkit-scrollbar-button { display: none; }
+html, body { margin: 0; }
+body { color: var(--ink); font: 400 14px/1.45 var(--ui); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+button { font: inherit; color: inherit; cursor: pointer; }
+kbd { font: 600 11px/1 var(--ui); padding: 3px 6px; border-radius: 5px; border: 1px solid var(--line-2); border-bottom-width: 2px; color: var(--ink-2); background: var(--surface); }
+
+/* ---------- Palette: the disc plus every option around it. Always dark, like a device screen. ---------- */
+/* Registered so they animate: chips travel along the ring (angle + radius), the pointer glides between picks. */
+@property --ang { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+@property --rad { syntax: '<length>'; inherits: false; initial-value: 0px; }
+@property --sel { syntax: '<angle>'; inherits: true; initial-value: -90deg; }
+.palette { position: fixed; z-index: 40; width: 460px; height: 600px; display: none; pointer-events: none; --fg: 255 255 255;
+  --spring: cubic-bezier(.22, 1.3, .36, 1); --glide: cubic-bezier(.2, .9, .25, 1); font-family: var(--display);
+  transition: --sel .42s var(--spring); }
+.palette.on { display: block; animation: palIn .38s var(--glide); }
+.palette.closing { animation: palOut .24s cubic-bezier(.4, 0, 1, 1) forwards; }
+@keyframes palIn { from { opacity: 0; transform: scale(.9); filter: blur(6px); } }
+@keyframes palOut { to { opacity: 0; transform: scale(.94); filter: blur(4px); } }
+
+/* backplate: a dark disc behind the chips so they read on any wallpaper, with a hairline track at the chip radius */
+.pal-ring { position: absolute; left: 230px; top: 230px; width: 404px; height: 404px; margin: -202px 0 0 -202px; border-radius: 50%;
+  background: radial-gradient(circle closest-side, rgba(14, 14, 16, .9) 0 96%, rgba(14, 14, 16, .55) 98.5%, transparent 100%);
+  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, .85); animation: ringIn .5s var(--spring);
+  transition: opacity .3s, transform .45s var(--glide); }
+.pal-ring::before { content: ""; position: absolute; inset: 34px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .07); }
+.pal-ring::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .05); }
+@keyframes ringIn { from { transform: scale(.5); opacity: 0; } }
+.palette.waiting .pal-ring::before, .palette.checking .pal-ring::before { border: 1px dashed rgba(255, 255, 255, .22); animation: spin 7s linear infinite; }
+.palette.committed .pal-ring { transform: scale(.66); opacity: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.pal-disc { position: absolute; left: 95px; top: 95px; width: 270px; height: 270px; animation: discIn .5s var(--spring) .04s backwards; }
+@keyframes discIn { from { transform: scale(.7); opacity: 0; } }
+.pal-disc canvas { position: absolute; inset: 0; width: 270px; height: 270px; }
+.pal-disc .plate { position: absolute; left: 22px; top: 22px; width: 226px; height: 226px; border-radius: 50%;
+  background: radial-gradient(circle at 50% 30%, #0c0c0d, #030303 70%);
+  border: 1px solid rgba(255, 255, 255, .12);
+  box-shadow: 0 0 0 5px #161618, 0 0 0 6px rgba(255, 255, 255, .09), inset 0 2px 10px rgba(255, 255, 255, .03), 0 24px 60px -14px rgba(0, 0, 0, .9);
+  transition: border-color .3s, box-shadow .35s; }
+.palette.inside .plate { border-color: rgb(var(--acc) / .7);
+  box-shadow: 0 0 0 5px #161618, 0 0 0 6px rgb(var(--acc) / .4), 0 0 46px -8px rgb(var(--acc) / .55), inset 0 2px 10px rgba(255, 255, 255, .03), 0 24px 60px -14px rgba(0, 0, 0, .9); }
+.palette[data-result=success] .plate { border-color: rgb(var(--ok-rgb) / .7); box-shadow: 0 0 0 5px #161618, 0 0 0 6px rgb(var(--ok-rgb) / .4), 0 0 46px -8px rgb(var(--ok-rgb) / .5), inset 0 2px 10px rgba(255, 255, 255, .03), 0 24px 60px -14px rgba(0, 0, 0, .9); transition: border-color .3s, box-shadow .3s; }
+
+/* pointer: a glowing notch on the disc's rim that turns to the current choice */
+.pal-pointer { position: absolute; left: 230px; top: 230px; width: 0; height: 0; transform: rotate(var(--sel)); opacity: 0; transition: opacity .25s; }
+.pal-pointer::before { content: ""; position: absolute; left: 124px; top: -5px; width: 16px; height: 10px; border-radius: 5px;
+  background: rgb(var(--acc)); box-shadow: 0 0 14px rgb(var(--acc) / .9), 0 0 3px #fff8 inset; }
+.palette.has-pick .pal-pointer { opacity: 1; }
+.palette.committed .pal-pointer, .palette.waiting .pal-pointer { opacity: 0; }
+
+/* chips sit on the ring; they spiral out from the disc, and fold back in when the face changes */
+.pal-chips { position: absolute; left: 230px; top: 230px; width: 0; height: 0; }
+.chip { position: absolute; left: 0; top: 0; translate: -50% -50%; pointer-events: auto; white-space: nowrap;
+  --rad: 30px; --ang: calc(var(--a) - 50deg);
+  transform: translate(calc(cos(var(--ang)) * var(--rad)), calc(sin(var(--ang)) * var(--rad)));
+  height: 32px; padding: 0 13px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, .12);
+  background: linear-gradient(180deg, #1d1d20, #141416); color: #e8e8e6;
+  font: 600 13px var(--display); letter-spacing: .02em; box-shadow: 0 1px 0 rgba(255, 255, 255, .05) inset, 0 8px 18px -8px rgba(0, 0, 0, .9);
+  opacity: 0; scale: .6; will-change: transform, scale; /* own layer: big soft glows on moving chips render in blocks otherwise */
+  transition: --rad .55s var(--spring), --ang .6s var(--glide), opacity .22s, scale .35s var(--spring),
+    background .18s, color .18s, box-shadow .25s, border-color .18s;
+  transition-delay: calc(var(--i) * 18ms), calc(var(--i) * 18ms), calc(var(--i) * 18ms), 0s, 0s, 0s, 0s, 0s; }
+.chip.tool { font-weight: 500; font-size: 12.5px; }
+.pal-chips.out .chip { --rad: 168px; --ang: var(--a); opacity: 1; scale: 1; }
+.pal-chips.out .chip.on { --rad: 174px; scale: 1.12; background: linear-gradient(180deg, rgb(var(--acc)), rgb(var(--acc) / .86)); color: #fff;
+  border-color: rgba(255, 255, 255, .25); box-shadow: 0 0 0 3px rgb(var(--acc) / .22), 0 6px 14px -6px rgb(var(--acc) / .75); transition-delay: 0s; }
+.palette[data-mode=click] .pal-chips.out .chip:hover:not(.on):not(:disabled) { scale: 1.06; border-color: rgba(255, 255, 255, .32); background: linear-gradient(180deg, #252529, #1a1a1d); }
+.chip:disabled { opacity: .34 !important; color: #a8a8a3; cursor: not-allowed; box-shadow: none; background: #121214; text-decoration: line-through rgba(255, 255, 255, .25); }
+/* commit: the pick flies into the disc, the rest fold away */
+.palette.committed .pal-chips .chip { --rad: 0px; opacity: 0 !important; scale: .4; transition-delay: 0s; }
+.palette.committed .pal-chips .chip.on { transition: --rad .38s cubic-bezier(.5, 0, .75, 0), opacity .3s .1s, scale .38s; }
+
+/* caption: route pill, then one line of hints; notes and reasons only when there is something to say */
+.pal-cap { position: absolute; left: 0; right: 0; top: 452px; display: flex; flex-direction: column; align-items: center; gap: 8px; animation: capIn .45s var(--glide) .08s backwards; }
+@keyframes capIn { from { opacity: 0; transform: translateY(-8px); } }
+.pal-route { font: 600 11.5px var(--mono); letter-spacing: .14em; padding: 7px 14px; border-radius: 999px; background: rgba(14, 14, 16, .94); color: #f2f2f0;
+  border: 1px solid rgba(255, 255, 255, .1); box-shadow: 0 10px 24px -12px #000; white-space: nowrap; max-width: 440px; overflow: hidden; text-overflow: ellipsis; }
+.pal-route em { font-style: normal; color: rgb(var(--acc)); }
+.pal-route.cancel { color: rgb(var(--bad-rgb)); }
+.pal-hint { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 12px; max-width: 440px; padding: 5px 12px; border-radius: 999px;
+  background: rgba(14, 14, 16, .82); font: 500 11px var(--ui); color: rgba(240, 240, 238, .7); text-align: center; }
+.pal-hint span { display: inline-flex; align-items: center; gap: 4px; }
+.pal-hint kbd { color: #f2f2f0; background: #222225; border-color: rgba(255, 255, 255, .16); font-size: 10px; padding: 2px 5px; }
+.pal-hint.reason { color: #ffc9bd; }
+.pal-note { max-width: 330px; color: #b5b4ae; background: rgba(14, 14, 16, .9); padding: 4px 10px; border-radius: 8px; font: 11px/1.45 var(--ui); text-align: center; }
+.pal-note:empty { display: none; }
+.palette.committed .pal-cap { display: none; }
+
+.pal-export-options { position: absolute; top: 418px; left: 95px; width: 270px; display: flex; justify-content: center; gap: 10px; padding: 6px 10px; border-radius: 999px;
+  background: rgba(14, 14, 16, .94); border: 1px solid rgba(255, 255, 255, .08); color: #b5b4ae; font: 11px var(--ui); pointer-events: auto; }
+.pal-export-options[hidden], .pal-export-options label[hidden] { display: none; }
+.pal-export-options select { margin-left: 4px; border: 1px solid #ffffff24; border-radius: 6px; background: #1b1b1e; color: #e8e8e4; padding: 2px 4px; font: 11px var(--ui); }
+.pal-export-options select:focus-visible { outline: 2px solid rgb(var(--acc)); outline-offset: 1px; }
+.palette.committed .pal-export-options { display: none; }
+
+/* progress ring around the disc */
+.pal-meter { position: absolute; left: 100px; top: 100px; width: 260px; height: 260px; transform: rotate(-90deg); overflow: visible; }
+.pal-meter[hidden] { display: none; }
+.pal-meter circle { fill: none; stroke-width: 3; }
+.meter-track { stroke: #ffffff1c; stroke-dasharray: .4 1.2; }
+.meter-value { stroke: rgb(var(--acc)); stroke-dasharray: 0 100; stroke-linecap: round; filter: drop-shadow(0 0 6px rgb(var(--acc) / .8)); transition: stroke-dasharray .3s var(--glide), stroke .3s; }
+.pal-meter.indeterminate { animation: meterOrbit 1.6s linear infinite; }
+.pal-meter.indeterminate .meter-value { stroke-dasharray: 22 78; }
+@keyframes meterOrbit { to { transform: rotate(270deg); } }
+.palette[data-result=success] .meter-value { stroke: rgb(var(--ok-rgb)); filter: drop-shadow(0 0 8px rgb(var(--ok-rgb) / .8)); }
+.palette[data-result=failed] .meter-value { stroke: rgb(var(--bad-rgb)); filter: drop-shadow(0 0 8px rgb(var(--bad-rgb) / .8)); }
+.palette[data-result] .pal-disc .plate { animation: settle .5s var(--spring); }
+@keyframes settle { 40% { transform: scale(1.035); } }
+
+/* progress and result card */
+.pal-work { position: absolute; top: 382px; left: 80px; width: 300px; padding: 14px 15px 13px; border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 14px; background: linear-gradient(180deg, rgba(24, 24, 27, .97), rgba(15, 15, 17, .97)); color: #e8e8e4;
+  font: 12px/1.45 var(--ui); pointer-events: auto; overflow: hidden; box-shadow: 0 22px 50px -18px rgba(0, 0, 0, .9);
+  animation: cardIn .4s var(--spring); }
+@keyframes cardIn { from { opacity: 0; transform: translateY(10px) scale(.97); } }
+.pal-work[hidden], .pal-work-actions[hidden], .pal-work-actions button[hidden] { display: none; }
+.pal-work-head, .pal-work-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.pal-work-title { font: 600 13px var(--display); letter-spacing: -.005em; }
+.pal-work-percent { color: rgb(var(--acc)); white-space: nowrap; font: 600 12px var(--mono); font-variant-numeric: tabular-nums; }
+.pal-work-file { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #f2f2f0; margin: 6px 0 2px; font: 500 12.5px var(--mono); }
+.pal-work-stage { color: #b5b4ae; font-size: 12px; max-height: 36px; overflow: auto; overflow-wrap: anywhere; }
+.pal-work-meta { margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, .07); font-size: 11px; color: #8d8d87; }
+.pal-work-actions { display: flex; flex-wrap:wrap; gap: 6px; margin-top: 11px; }
+.pal-work-actions button { border: 1px solid rgba(255, 255, 255, .14); border-radius: 8px; padding: 6px 11px; background: rgba(255, 255, 255, .05);
+  font: 500 12px var(--ui); color: #ececea; transition: background .15s, border-color .15s, transform .12s; }
+.pal-work-actions button:hover { background: rgba(255, 255, 255, .11); border-color: rgba(255, 255, 255, .24); }
+.pal-work-actions button:active { transform: scale(.97); }
+.pal-work-actions button:focus-visible { outline: 2px solid rgb(var(--acc)); outline-offset: 2px; }
+.pal-work-actions button:last-child { margin-left: auto; }
+.pal-work-actions:has([data-action=undo]:not([hidden])) { display:grid;grid-template-columns:1fr 1fr; }
+.pal-work-actions:has([data-action=undo]:not([hidden])) button { margin-left:0; }
+.pal-work[data-state=success] .pal-work-actions [data-action=folder] { background: rgb(var(--ok-rgb) / .16); border-color: rgb(var(--ok-rgb) / .45); color: #d9f5e4; }
+.pal-work[data-state=success] .pal-work-actions [data-action=folder]:hover { background: rgb(var(--ok-rgb) / .26); }
+.pal-work[data-state=success] .pal-work-percent { color: rgb(var(--ok-rgb)); }
+.pal-work[data-state=failed] .pal-work-percent, .pal-work[data-state=failed] .pal-work-stage { color: #ffb8ab; }
+.pal-work[data-state=success] { border-color: rgb(var(--ok-rgb) / .55); box-shadow: 0 22px 50px -18px #000e, 0 0 34px -12px rgb(var(--ok-rgb) / .7); }
+.pal-work[data-state=failed] { border-color: rgb(var(--bad-rgb) / .7); box-shadow: 0 22px 50px -18px #000e, 0 0 34px -12px rgb(var(--bad-rgb) / .7); }
+.pal-work[data-state=success] .pal-work-title { color: rgb(var(--ok-rgb)); font-size: 14px; }
+.pal-work[data-state=failed] .pal-work-title { color: rgb(var(--bad-rgb)); font-size: 14px; }
+/* a success closes itself; this bar shows the time left (it stops while the mouse is on the card) */
+.pal-work.counting::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px;
+  background: linear-gradient(90deg, rgb(var(--ok-rgb) / .6), rgb(var(--ok-rgb))); transform-origin: left; animation: countdown var(--stay, 6s) linear forwards; }
+@keyframes countdown { to { transform: scaleX(0); } }
+.palette.cancelling .pal-meter { animation: cancelOrbit 1s linear infinite; }
+@keyframes cancelOrbit { to { transform: rotate(-450deg); } }
+.palette[data-result=cancelled] .meter-value { stroke: #b0b0a9; }
+.pal-work[data-state=cancelled] .pal-work-percent { color:#b0b0a9; }
+.pal-work-actions button:disabled { opacity:.55;cursor:default; }
+.pal-work-actions [data-action=cancel] { margin-left:auto; }
+.inactive .demo *,.inactive .well .arrow svg{animation-play-state:paused!important}
+.palette[data-result=failed] .pal-disc{animation:failureShake .22s linear 2}.chip.on{animation:pickTick .12s ease-out}
+@keyframes failureShake{25%{translate:-4px 0}75%{translate:4px 0}}@keyframes pickTick{50%{scale:1.06}}
+.pal-presets{position:absolute;left:85px;top:365px;width:290px;display:flex;gap:8px;align-items:center;pointer-events:auto;color:#ddd;font-size:12.5px}.pal-presets[hidden]{display:none}.pal-presets label{display:flex;align-items:center;gap:8px;flex:1;min-width:0}.pal-presets select{width:160px;background:#1e1e21;color:#ededec;border:1px solid #ffffff30;border-radius:7px;padding:6px}.pal-presets button{background:#1e1e21;color:#ededec;border:1px solid #ffffff30;border-radius:7px;padding:6px}
+@media(forced-colors:active){.chip,.btn,.pal-work-actions button{border:1px solid ButtonText}.pal-work{background:Canvas;color:CanvasText;border-color:CanvasText}.meter-value{stroke:Highlight}.switch{border:1px solid ButtonText}}
+.chip.last-used::after{content:'';position:absolute;right:5px;top:5px;width:4px;height:4px;border-radius:50%;background:rgb(var(--ok-rgb));}
+.palette.batch-expanded .pal-work{top:60px;max-height:520px;overflow:auto;}
+.pal-batch-list{max-height:220px;overflow:auto;margin-top:10px;border-top:1px solid #ffffff20;}
+.pal-batch[hidden]{display:none;}
+.pal-batch-row{display:grid;gap:3px;padding:8px 0;border-bottom:1px solid #ffffff12;}
+.pal-batch-row strong{font:500 12.5px var(--mono);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.pal-batch-row span{font-size:11px;color:#b5b4ae;overflow-wrap:anywhere;}
+.pal-batch-row[data-state=failed] span{color:#ffb8ab;}
+.pal-work:has([data-action=details]:not([hidden])) .pal-work-actions{display:grid;grid-template-columns:1fr 1fr;}
+.pal-work:has([data-action=details]:not([hidden])) .pal-work-actions button{margin-left:0;}
+.pal-work:has([data-action=details]:not([hidden])){top:350px;}
+.palette.batch-expanded .pal-work:has([data-action=details]:not([hidden])){top:60px;}
+button:focus-visible,a:focus-visible,[tabindex="0"]:focus-visible,input:focus-visible,select:focus-visible { outline:2px solid rgb(var(--acc));outline-offset:3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .palette, .palette *, .chip { animation: none !important; transition: none !important; }
+  .pal-chips.out .chip { --rad: 168px; --ang: var(--a); }
+}

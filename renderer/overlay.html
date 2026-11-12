@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'">
+<title>Filerrrr palette</title>
+<link rel="stylesheet" href="theme.css">
+<style>
+  /* Nearly invisible, not fully transparent: the whole window must catch the drop, not let it fall through. */
+  html, body { height: 100%; overflow: hidden; background: rgba(0, 0, 0, .004); }
+  .palette { left: 40px; top: 0; } /* the window is 80px wider than the palette: long option names stay inside */
+  /* during an OS drag, every drag event must land on <body>, so the only dragleave is leaving the window */
+  body.drag .palette, body.drag .palette * { pointer-events: none !important; }
+</style>
+</head>
+<body>
+<div id="pal"></div>
+<script src="../formats.js"></script>
+<script src="../features.js"></script>
+<script src="disc.js"></script>
+<script src="palette.js"></script>
+<script src="overlay.js"></script>
+</body>
+</html>

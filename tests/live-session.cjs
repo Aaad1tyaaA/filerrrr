@@ -1,0 +1,10 @@
+const fs=require('fs'),os=require('os'),path=require('path');
+const {app,screen}=require('electron');
+const work=fs.mkdtempSync(path.join(os.tmpdir(),'filerrrr-live-eight-')),profile=path.join(work,'profile');fs.mkdirSync(profile);
+fs.writeFileSync(path.join(profile,'filerrrr.json'),JSON.stringify({onboarding:true,preferences:{trigger:'alt',shortcut:'Alt+Shift+C'},features:{history:true}}));
+process.env.FILERRRR_TEST_DATA_DIR=profile;process.env.FILERRRR_TEST_SHORTCUT='1';process.env.FILERRRR_DEBUG=path.join(work,'trace.log');
+const fixture=path.join(work,'Explorer sample.json');fs.writeFileSync(fixture,'{"hello":"Filerrrr live test"}');
+fs.writeFileSync(path.resolve(__dirname,'../../.tools/finish-eight-2026-11-12/live-session.json'),JSON.stringify({work,fixture,profile,pid:process.pid}));
+require('../main.cjs');
+app.whenReady().then(()=>{fs.writeFileSync(path.join(work,'displays.json'),JSON.stringify(screen.getAllDisplays().map(d=>({bounds:d.bounds,scaleFactor:d.scaleFactor}))));setTimeout(()=>{const windows=require('electron').BrowserWindow.getAllWindows();fs.writeFileSync(path.join(work,'windows.json'),JSON.stringify({userData:app.getPath('userData'),argv:process.argv,windows:windows.map(w=>({title:w.getTitle(),visible:w.isVisible()}))}));windows.forEach(w=>w.show());},2000);});
+setTimeout(()=>app.quit(),15*60*1000).unref();

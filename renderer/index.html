@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
+<title>Filerrrr</title>
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="feature-settings.css">
+<style>
+body { background: var(--bg); min-height: 100vh; overflow-x: hidden; transition: background .3s; }
+svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+.rise { animation: rise .6s var(--ease) backwards; animation-delay: calc(var(--k, 0) * 70ms); }
+
+/* ---------- title bar ---------- */
+.bar { position: sticky; top: 0; z-index: 20; height: 48px; display: flex; align-items: center; gap: 6px; padding: 0 150px 0 16px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(14px); -webkit-app-region: drag; transition: box-shadow .3s; }
+.bar.scrolled { box-shadow: 0 1px 0 var(--line); }
+.brand { display: flex; align-items: center; gap: 9px; font: 600 15px var(--display); letter-spacing: -.01em; }
+.brand canvas { width: 20px; height: 20px; transition: transform .6s var(--ease); }
+.brand:hover canvas { transform: rotate(120deg); }
+.grow { flex: 1; }
+.nodrag { -webkit-app-region: no-drag; }
+.switch { position: relative; flex: none; width: 34px; height: 20px; border-radius: 10px; border: 0; padding: 0; background: var(--line-2); transition: background .2s; }
+.switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .35); transition: transform .3s cubic-bezier(.3, 1.4, .5, 1); }
+.switch[aria-checked=true] { background: rgb(var(--acc)); }
+.switch[aria-checked=true]::after { transform: translateX(14px); }
+.switch:focus-visible { outline: 2px solid rgb(var(--acc)); outline-offset: 2px; }
+.pill { display: inline-flex; align-items: center; gap: 9px; height: 32px; padding: 0 10px; border-radius: 8px; color: var(--ink-2); font-size: 13px; cursor: pointer; }
+.pill:hover { background: var(--surface-2); color: var(--ink); }
+.icon-btn { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; border: 0; background: transparent; color: var(--ink-2); transition: background .15s, color .15s, transform .3s var(--ease); }
+.icon-btn:hover { background: var(--surface-2); color: var(--ink); }
+.icon-btn:active { transform: scale(.92); }
+#settingsBtn svg { transition: transform .5s var(--ease); }
+#settingsBtn:hover svg { transform: rotate(60deg); }
+
+/* ---------- page ---------- */
+.page { max-width: 1120px; margin: 0 auto; padding: 6px 28px 48px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 9px; border: 1px solid var(--line-2);
+  background: var(--surface); font-size: 13px; font-weight: 500; transition: background .15s, transform .12s, box-shadow .2s, border-color .15s; }
+.btn:hover { background: var(--surface-2); }
+.btn:active { transform: scale(.97); }
+.btn.primary { background: rgb(var(--acc)); border-color: transparent; color: #fff; box-shadow: 0 6px 16px -8px rgb(var(--acc) / .9); }
+.btn.primary:hover { filter: brightness(1.07); box-shadow: 0 8px 22px -8px rgb(var(--acc)); }
+.btn.sm { height: 28px; padding: 0 10px; font-size: 12.5px; }
+.btn kbd { margin-left: 2px; }
+
+/* last conversion */
+.spot { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); border-radius: 18px; background: var(--surface); box-shadow: var(--shadow); overflow: hidden; view-transition-name: spot; }
+.spot[hidden] { display: none; }
+.preview { position: relative; min-height: 320px; height: 100%; width: 100%; background: var(--sunken); display: grid; place-items: center; overflow: hidden; }
+.preview img { width: 100%; height: 100%; object-fit: contain; animation: fadeImg .5s var(--ease); }
+@keyframes fadeImg { from { opacity: 0; transform: scale(1.03); } }
+.preview .kind svg { width: 56px; height: 56px; stroke-width: 1.2; color: var(--ink-3); }
+.preview .more { position: absolute; right: 12px; bottom: 12px; padding: 4px 9px; border-radius: 7px; background: rgba(0, 0, 0, .6); color: #fff; font-size: 12px; backdrop-filter: blur(6px); }
+.details { padding: 28px 30px; display: flex; flex-direction: column; justify-content: center; gap: 18px; min-width: 0; }
+.over { font-size: 12.5px; color: var(--ink-3); }
+.details h1 { margin: 3px 0 0; font: 600 26px/1.2 var(--display); letter-spacing: -.02em; overflow-wrap: anywhere; }
+.routeline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); }
+.tag { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; background: var(--surface-2); color: var(--ink); font: 600 11.5px var(--ui); letter-spacing: .02em; }
+.tag.to { background: rgb(var(--acc) / .14); color: rgb(var(--acc)); }
+.sizes { display: grid; gap: 8px; }
+.size { display: grid; grid-template-columns: 52px 1fr 74px; align-items: center; gap: 10px; font-size: 12.5px; color: var(--ink-2); }
+.size .track { height: 8px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+.size .fill { height: 100%; width: 0; border-radius: 4px; background: var(--ink-3); transition: width 1s var(--ease) .15s; }
+.size.after .fill { background: rgb(var(--acc)); transition-delay: .35s; }
+.size span:last-child { text-align: right; color: var(--ink); }
+.delta { font: 600 13px var(--ui); min-height: 18px; }
+.delta.down { color: rgb(var(--ok-rgb)); }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.settings-btn svg { width: 15px; height: 15px; transition: transform .5s var(--ease); }
+.settings-btn:hover svg { transform: rotate(60deg); }
+/* a converted file that has since been moved or deleted */
+.gone { display: grid; place-items: center; gap: 6px; text-align: center; color: var(--ink-3); font-size: 12.5px; }
+.gone svg { width: 26px; height: 26px; stroke-width: 1.3; }
+.tile.missing .name, .tile.missing .sub { opacity: .55; }
+.tile.missing .thumb { background: repeating-linear-gradient(135deg, var(--sunken) 0 10px, color-mix(in srgb, var(--sunken) 80%, var(--line-2)) 10px 11px); }
+.spot.missing #openBtn { opacity: .45; pointer-events: none; }
+
+/* one-time offer for the Windows 11 menu */
+.offer { display: flex; align-items: center; gap: 14px; margin: 4px 0 16px; padding: 14px 16px; border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+.offer[hidden] { display: none; }
+.offer-ico { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; background: rgb(var(--acc) / .14); color: rgb(var(--acc)); flex: none; }
+.offer b { display: block; font-size: 13.5px; } .offer span { font-size: 12.5px; color: var(--ink-2); }
+.offer-acts { margin-left: auto; display: flex; gap: 8px; flex: none; }
+
+/* drop well */
+.well { margin-top: 16px; display: flex; align-items: center; gap: 18px; padding: 20px 24px; border-radius: 18px; border: 1.5px dashed var(--line-2); color: var(--ink-2); }
+.well .arrow { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); color: var(--ink); flex: none; }
+.well .arrow svg { width: 20px; height: 20px; animation: bob 2.4s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(3px); } }
+.well b { display: block; font: 600 15px var(--display); color: var(--ink); }
+.well .hint { font-size: 13px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.well .hint i { font-style: normal; color: var(--ink); }
+.well.big { flex-direction: column; text-align: center; padding: 30px 24px; }
+.well.big .hint { justify-content: center; }
+.well.big .arrow { display: none; }
+
+/* first-run demo of the gesture */
+.demo { position: relative; width: 340px; height: 170px; margin: 0 auto 4px; }
+.demo[hidden] { display: none; }
+.demo .file { position: absolute; left: 30px; top: 60px; display: flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px 0 5px; border-radius: 8px; background: var(--surface); box-shadow: var(--shadow);
+  font-size: 12px; color: var(--ink); animation: dragFile 5.5s var(--ease) infinite; z-index: 2; }
+.demo .file b { font: 700 9.5px/18px var(--ui); padding: 0 5px; border-radius: 5px; background: #6b8cff; color: #fff; }
+.demo .key { position: absolute; left: 22px; top: 118px; animation: keyDown 5.5s infinite; }
+.demo .ring { position: absolute; left: 170px; top: 85px; width: 0; height: 0; }
+.demo .dsc { position: absolute; left: -26px; top: -26px; width: 52px; height: 52px; border-radius: 50%; background: #050505 radial-gradient(circle, rgba(255, 255, 255, .5) 1px, transparent 1.3px) 0 0 / 6px 6px;
+  border: 1px solid rgba(255, 255, 255, .15); animation: discPop 5.5s var(--ease) infinite; }
+.demo .c { position: absolute; translate: -50% -50%; padding: 2px 7px; border-radius: 9px; background: #151517; color: #ddd; border: 1px solid rgba(255, 255, 255, .12);
+  font: 600 10px var(--display); animation: chipPop 5.5s cubic-bezier(.3, 1.5, .5, 1) infinite; animation-delay: calc(var(--i) * 40ms); opacity: 0; }
+.demo .c.pick { animation-name: chipPop, chipPick; }
+.demo .done { position: absolute; left: 160px; top: 75px; width: 20px; height: 20px; border-radius: 50%; background: rgb(var(--ok-rgb)); color: #052; display: grid; place-items: center;
+  font-weight: 800; font-size: 12px; opacity: 0; animation: done 5.5s infinite; }
+@keyframes dragFile { 0%, 8% { transform: translate(0, 0); opacity: 1; } 30%, 62% { transform: translate(122px, 12px); opacity: 1; } 70% { transform: translate(122px, 12px) scale(.6); opacity: 0; } 100% { opacity: 0; } }
+@keyframes keyDown { 0%, 4% { transform: none; opacity: .5; } 8%, 64% { transform: translateY(2px); opacity: 1; } 70%, 100% { opacity: .5; transform: none; } }
+@keyframes discPop { 0%, 22% { transform: scale(0); } 30%, 64% { transform: scale(1); } 72%, 100% { transform: scale(0); } }
+@keyframes chipPop { 0%, 24% { transform: translate(0, 0) scale(.3); opacity: 0; } 32%, 64% { transform: translate(var(--x), var(--y)) scale(1); opacity: 1; } 70%, 100% { transform: translate(0, 0) scale(.3); opacity: 0; } }
+@keyframes chipPick { 0%, 44% { background: #151517; color: #ddd; } 48%, 64% { background: rgb(var(--acc)); color: #fff; } }
+@keyframes done { 0%, 68% { opacity: 0; transform: scale(.4); } 74%, 90% { opacity: 1; transform: scale(1); } 100% { opacity: 0; } }
+
+/* recent */
+.head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 34px 0 14px; }
+.head[hidden] { display: none; }
+.head h2 { margin: 0; font: 600 18px var(--display); letter-spacing: -.01em; }
+.head .count { font-size: 13px; color: var(--ink-3); font-weight: 400; margin-left: 8px; }
+.filters { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.seg { position: relative; display: inline-flex; padding: 3px; border-radius: 9px; background: var(--surface-2); flex: none; }
+.seg button { position: relative; z-index: 1; height: 28px; padding: 0 11px; border: 0; border-radius: 7px; background: transparent; color: var(--ink-2); font-size: 12.5px; transition: color .2s; }
+.seg button[aria-pressed=true] { color: var(--ink); }
+.seg .thumb { position: absolute; z-index: 0; top: 3px; height: 28px; border-radius: 7px; background: var(--surface); box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: left .3s var(--ease), width .3s var(--ease); }
+.search { position: relative; display: flex; align-items: center; }
+.search svg { position: absolute; left: 10px; color: var(--ink-3); }
+.search input { width: 190px; height: 34px; padding: 0 10px 0 32px; border-radius: 9px; border: 1px solid var(--line-2); background: var(--surface); color: var(--ink); font: 13px var(--ui); outline: none;
+  transition: border-color .2s, box-shadow .2s, width .3s var(--ease); }
+.search input:focus { width: 240px; border-color: rgb(var(--acc)); box-shadow: 0 0 0 3px rgb(var(--acc) / .15); }
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+.tile { position: relative; display: flex; flex-direction: column; border-radius: 13px; background: var(--surface); box-shadow: var(--shadow); overflow: hidden; cursor: pointer; outline: none;
+  animation: rise .5s var(--ease) backwards; animation-delay: calc(var(--k, 0) * 35ms); transition: transform .25s var(--ease), box-shadow .25s; }
+.tile:hover { transform: translateY(-3px); box-shadow: var(--shadow), 0 18px 34px -20px rgba(0, 0, 0, .55); }
+.tile:focus-visible { box-shadow: 0 0 0 2px rgb(var(--acc)); }
+.tile .thumb { position: relative; aspect-ratio: 4 / 3; background: var(--sunken); display: grid; place-items: center; overflow: hidden; }
+.tile .thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s var(--ease); animation: fadeImg .4s var(--ease); }
+.tile:hover .thumb img { transform: scale(1.04); }
+.tile .thumb .kind svg { width: 30px; height: 30px; color: var(--ink-3); stroke-width: 1.3; }
+.tile .acts { position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; opacity: 0; transform: translateY(-4px); transition: opacity .2s, transform .2s var(--ease); }
+.tile:hover .acts, .tile:focus-within .acts { opacity: 1; transform: none; }
+.tile .acts button { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 7px; border: 0; background: rgba(0, 0, 0, .58); color: #fff; backdrop-filter: blur(6px); }
+.tile .acts button:hover { background: rgb(var(--acc)); }
+.tile .meta { padding: 10px 12px 12px; display: grid; gap: 3px; }
+.tile .name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tile .sub { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--ink-3); }
+.tile .sub span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tile .sub .delta { font-size: 12px; min-height: 0; flex: none; }
+.tile.new { animation: arrive .8s cubic-bezier(.3, 1.4, .5, 1); }
+@keyframes arrive { from { opacity: 0; transform: translateY(10px) scale(.94); } }
+.none { grid-column: 1 / -1; padding: 30px; text-align: center; color: var(--ink-3); font-size: 13px; }
+.legend { margin-top: 36px; display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; font-size: 12px; color: var(--ink-3); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+/* whole-window drop target */
+.scrim { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; background: color-mix(in srgb, var(--bg) 72%, transparent); backdrop-filter: blur(8px);
+  opacity: 0; pointer-events: none; transition: opacity .2s; }
+.scrim.on { opacity: 1; }
+.scrim .box { width: min(560px, 80vw); height: min(300px, 50vh); border-radius: 24px; display: grid; place-items: center; text-align: center; transform: scale(.96); transition: transform .3s var(--ease);
+  background: repeating-linear-gradient(90deg, rgb(var(--acc)) 0 12px, transparent 12px 22px) 0 0 / 100% 2px no-repeat,
+              repeating-linear-gradient(90deg, rgb(var(--acc)) 0 12px, transparent 12px 22px) 0 100% / 100% 2px no-repeat,
+              repeating-linear-gradient(0deg, rgb(var(--acc)) 0 12px, transparent 12px 22px) 0 0 / 2px 100% no-repeat,
+              repeating-linear-gradient(0deg, rgb(var(--acc)) 0 12px, transparent 12px 22px) 100% 0 / 2px 100% no-repeat, rgb(var(--acc) / .06); }
+.scrim.on .box { transform: none; }
+.scrim b { display: block; font: 600 20px var(--display); margin-bottom: 4px; }
+.scrim span { color: var(--ink-2); font-size: 13px; }
+
+/* settings drawer */
+.drawer-bg { position: fixed; inset: 0; z-index: 50; background: rgba(0, 0, 0, .35); opacity: 0; pointer-events: none; transition: opacity .25s; }
+.drawer-bg.on { opacity: 1; pointer-events: auto; }
+.drawer { position: fixed; z-index: 51; top: 48px; right: 0; bottom: 0; width: 370px; max-width: 92vw; background: var(--surface); box-shadow: -20px 0 50px -20px rgba(0, 0, 0, .5);
+  transform: translateX(105%); visibility: hidden; transition: transform .4s var(--ease), visibility 0s .4s; padding: 24px 22px 22px; border-top-left-radius: 14px; overflow: auto; }
+.drawer.on { transform: none; visibility: visible; transition: transform .4s var(--ease); }
+.drawer h2 { margin: 0 0 10px; font: 600 20px var(--display); }
+.drawer .close { position: absolute; top: 12px; right: 12px; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.row[hidden] { display: none; }
+.row b { display: block; font-size: 13.5px; font-weight: 600; }
+.row small { display: block; color: var(--ink-3); font-size: 12px; margin-top: 2px; line-height: 1.4; }
+.drawer .foot { margin-top: 18px; font-size: 12px; color: var(--ink-3); display: grid; gap: 6px; }
+
+/* toast */
+.toast { position: fixed; z-index: 60; left: 50%; bottom: 24px; display: flex; align-items: center; gap: 10px; max-width: min(560px, 90vw); padding: 11px 14px; border-radius: 12px;
+  background: #1c1c1f; color: #f1f1ef; box-shadow: 0 16px 40px -14px rgba(0, 0, 0, .7); font-size: 13px; transform: translate(-50%, 200%); opacity: 0; visibility: hidden;
+  transition: transform .45s cubic-bezier(.3, 1.3, .5, 1), opacity .3s, visibility 0s .45s; }
+.toast.on { transform: translate(-50%, 0); opacity: 1; visibility: visible; transition: transform .45s cubic-bezier(.3, 1.3, .5, 1), opacity .2s; }
+.toast i { width: 8px; height: 8px; border-radius: 50%; background: rgb(var(--ok-rgb)); flex: none; }
+.toast.bad i { background: rgb(var(--bad-rgb)); }
+
+#pal { z-index: 45; }
+::view-transition-old(spot), ::view-transition-new(spot) { animation-duration: .45s; animation-timing-function: cubic-bezier(.2, .8, .2, 1); }
+@media (max-width: 820px) {
+  .page { padding: 6px 16px 40px; }
+  .spot { grid-template-columns: 1fr; }
+  .preview { min-height: 0; height: auto; aspect-ratio: 16 / 9; }
+  .search input, .search input:focus { width: 150px; }
+  .bar .pill span { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<header class="bar" id="bar">
+  <div class="brand"><canvas id="mark" width="40" height="40" aria-hidden="true"></canvas>Filerrrr</div>
+  <span class="grow"></span>
+  <label class="pill nodrag" title="Hold Ctrl while dragging files in Explorer to open the palette"><span>Ctrl + drag</span>
+    <button class="switch" id="gestureBtn" role="switch" aria-checked="true" aria-label="Ctrl + drag gesture"></button></label>
+  <button class="btn sm nodrag settings-btn" id="settingsBtn" title="Features & settings">
+    <svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
+</header>
+
+<main class="page" id="homePage">
+  <div class="offer rise" id="offer" hidden>
+    <div class="offer-ico"><svg class="i" viewBox="0 0 24 24"><path d="M4 5h16M4 10h16M4 15h10"/><circle cx="18" cy="17" r="3"/></svg></div>
+    <div><b>Put “Convert with Filerrrr” in your right-click menu</b><span>At the top of Windows 11's menu, next to Open with. Windows asks for administrator approval once.</span></div>
+    <div class="offer-acts"><button class="btn sm" id="offerLater">Not now</button><button class="btn sm primary" id="offerAdd">Add it</button></div>
+  </div>
+  <section class="spot rise" id="spot" style="--k:0" hidden>
+    <div class="preview" id="pv"></div>
+    <div class="details">
+      <div><div class="over" id="pvWhen"></div><h1 id="pvName"></h1></div>
+      <div class="routeline" id="pvRoute"></div>
+      <div class="sizes">
+        <div class="size"><span>Before</span><div class="track"><div class="fill" id="bBefore"></div></div><span id="sBefore"></span></div>
+        <div class="size after"><span>After</span><div class="track"><div class="fill" id="bAfter"></div></div><span id="sAfter"></span></div>
+        <div class="delta" id="pvDelta"></div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="openBtn">Open</button>
+        <button class="btn" id="folderBtn">Show in folder</button>
+        <button class="btn" id="againBtn">Convert again…</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="well rise" id="well" style="--k:1">
+    <div class="demo" id="demo" hidden aria-hidden="true">
+      <div class="file"><b>HEIC</b>trip.heic</div>
+      <kbd class="key">Ctrl</kbd>
+      <div class="ring"><div class="dsc"></div>
+        <span class="c pick" style="--i:0;--x:0px;--y:-62px">JPG</span><span class="c" style="--i:1;--x:58px;--y:-22px">PNG</span>
+        <span class="c" style="--i:2;--x:44px;--y:44px">WEBP</span><span class="c" style="--i:3;--x:-44px;--y:44px">PDF</span><span class="c" style="--i:4;--x:-58px;--y:-22px">AVIF</span></div>
+      <div class="done">✓</div>
+    </div>
+    <div class="arrow"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></div>
+    <div>
+      <b id="wellTitle">Drop files anywhere in this window</b>
+      <span class="hint">or <button class="btn sm" id="pickBtn">Browse <kbd>O</kbd></button><span id="ctrlHint">· hold <kbd>Ctrl</kbd> while dragging in Explorer</span><span>· or right-click a file › <i>Convert with Filerrrr</i></span></span>
+    </div>
+  </section>
+
+  <div class="head rise" id="recentHead" style="--k:2">
+    <h2>History<span class="count" id="count"></span></h2>
+    <div class="filters">
+      <label class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Search" autocomplete="off" spellcheck="false" aria-label="Search recent conversions"></label>
+      <div class="seg" id="kindSeg" role="group" aria-label="Filter">
+        <span class="thumb"></span>
+        <button data-v="all" aria-pressed="true">All</button><button data-v="image">Images</button><button data-v="video">Video</button>
+        <button data-v="audio">Audio</button><button data-v="docs">Docs</button>
+      </div>
+    </div>
+  </div>
+  <div class="gallery" id="gallery"></div>
+  <div id="historySelection" class="history-selection" hidden><span id="selectedCount"></span><button class="btn sm" id="convertSelected">Convert again…</button><button class="btn sm" id="removeSelected">Remove from history</button><button class="btn sm" id="cancelSelection">Done</button></div>
+
+  <footer class="legend"><span><kbd>Wheel</kbd> or aim to pick</span><span><kbd>A</kbd>–<kbd>Z</kbd> type a format</span><span><kbd>Tab</kbd> tools</span><span><kbd>Esc</kbd> cancel</span><span>Let go of <kbd>Ctrl</kbd> to drop normally</span></footer>
+</main>
+
+<div class="scrim" id="scrim"><div class="box"><div><b>Drop to convert</b><span>Pick a format on the palette next</span></div></div></div>
+
+<main class="page feature-page" id="drawer" aria-label="Settings" hidden>
+  <button class="btn sm" id="drawerClose">Back to conversions</button>
+  <header class="feature-heading"><div><h1 id="settingsTitle">Settings</h1><p id="settingsSubtitle">Set your defaults. The palette stays focused on your files.</p></div></header>
+  <nav class="settings-tabs" aria-label="Preferences"><button id="settingsTab" aria-pressed="true">Settings</button><button id="formatsTab" aria-pressed="false">Formats &amp; tools</button></nav>
+  <div id="everydaySettings">
+  <section class="settings-section"><h2>Files and quality</h2>
+    <div class="row"><label for="destination"><b>Save converted files</b><small>Originals always stay in place</small></label><select id="destination"><option value="original">Next to original</option><option value="converted">Converted subfolder</option><option value="chosen">Chosen folder</option></select></div>
+    <div class="row" id="folderRow" hidden><div><b>Output folder</b><small id="outputFolder">No folder chosen</small></div><button class="btn sm" id="chooseFolder">Choose…</button></div>
+    <div class="row"><label for="collision"><b>If a name exists</b><small>Replace sends the previous output to the Recycle Bin. Undo removes the new output.</small></label><select id="collision"><option value="number">Add a number</option><option value="replace">Replace previous output</option></select></div>
+    <div class="row"><label for="openFolder"><b>Open folder when finished</b></label><button class="switch" id="openFolder" role="switch" aria-checked="false" aria-label="Open output folder when finished"></button></div>
+    <div class="row"><label for="imageQuality"><b>Image quality</b><small>Small trades detail for size and can reduce PNG colours.</small></label><select id="imageQuality"><option value="small">Small</option><option value="balanced">Balanced</option><option value="best">Best</option></select></div>
+    <div class="row"><label for="videoQuality"><b>Video quality</b></label><div class="settings-inline"><select id="videoQuality" aria-label="Video quality"><option value="small">Small</option><option value="balanced">Balanced</option><option value="best">Best</option></select><select id="videoResolution" aria-label="Video resolution"><option value="keep">Keep resolution</option><option value="1080">Up to 1080p</option><option value="720">Up to 720p</option></select></div></div>
+    <div class="row"><label for="audioBitrate"><b>Audio bitrate</b><small>Applies to lossy audio. WAV, AIFF and FLAC stay lossless.</small></label><select id="audioBitrate"><option value="96">96 kbps</option><option value="128">128 kbps</option><option value="192">192 kbps</option><option value="256">256 kbps</option><option value="320">320 kbps</option></select></div>
+  </section>
+  <section class="settings-section"><h2>Palette</h2>
+    <div class="row"><label for="trigger"><b>Drag trigger</b><small>Hold this while dragging in Explorer</small></label><select id="trigger"><option value="ctrl">Ctrl + left drag</option><option value="alt">Alt + left drag</option><option value="shift">Shift + left drag</option><option value="right">Right-button drag</option></select></div>
+    <div class="row"><label for="shortcut"><b>Convert selected Explorer files</b><small id="shortcutNote">Opens a file picker when Explorer has no selection</small></label><select id="shortcut"><option value="Control+Alt+C">Ctrl + Alt + C</option><option value="Control+Shift+Space">Ctrl + Shift + Space</option><option value="Alt+Shift+C">Alt + Shift + C</option><option value="off">Off</option></select></div>
+    <div class="row"><label for="learnPicks"><b>Remember my last format</b><small>Only on this PC, per input type</small></label><div class="settings-inline"><button class="btn sm" id="forgetPicks">Reset</button><button class="switch" id="learnPicks" role="switch" aria-checked="true" aria-label="Remember last format"></button></div></div>
+    <div class="row"><label for="favouriteRing"><b>Compact favourites ring</b><small>Seven useful formats and More when there are over eight choices</small></label><button class="switch" id="favouriteRing" role="switch" aria-checked="true" aria-label="Compact favourites ring"></button></div>
+  </section>
+  <section id="connections" class="feature-section"><h2>App &amp; Windows</h2><p class="section-note">Appearance, startup and Explorer integration.</p>
+  <div class="row"><div><b>Appearance</b><small>Follow Windows, or pick one</small></div><div class="seg" id="themeSeg" role="group" aria-label="Appearance"><span class="thumb"></span><button data-v="system">Auto</button><button data-v="light">Light</button><button data-v="dark">Dark</button></div></div>
+  <div class="row"><div><b>Drag gesture enabled</b><small>Pause it whenever you need the standard Explorer drag</small></div><button class="switch" id="sGesture" role="switch" aria-checked="true" aria-label="Drag gesture enabled"></button></div>
+  <div class="row" id="rowMenu"><div><b>Right-click menu</b><small>Also adds Filerrrr to Send to</small></div><button class="switch" id="sMenu" role="switch" aria-checked="true" aria-label="Right-click menu"></button></div>
+  <div class="row" id="rowTop" hidden><div><b>Windows 11 menu</b><small id="topNote"></small></div><button class="btn sm" id="topBtn">Add</button></div>
+  <div class="row"><div><b>Start with Windows</b><small>Starts in the tray without opening a window</small></div><button class="switch" id="sLogin" role="switch" aria-checked="false" aria-label="Start with Windows"></button></div>
+  <div class="row"><div><b>History</b><small>Removes history entries only; files stay in place</small></div><div class="settings-inline"><button class="btn sm" id="pruneBtn">Remove missing</button><button class="btn sm" id="clearBtn">Clear</button></div></div>
+  </section>
+  <details class="settings-section"><summary>Controls and history preferences</summary><div id="controlList" class="feature-list"></div></details>
+  <section class="settings-section"><h2>Optional engines</h2><p id="engineStatus" class="section-note"></p><p class="section-note">The core edition uses a separate engine pack for media, English scan recognition, PDF rendering and PSD images. Common image conversions work without it. Import the pack supplied with this build. Checksums must match before anything is installed.</p><button class="btn" id="importEngines">Import engine pack…</button><p id="engineMessage" role="status"></p></section>
+  </div>
+  <div id="catalogue" hidden>
+  <div class="feature-toolbar"><label class="feature-search">Find a feature<input id="featureSearch" type="search" placeholder="Try PDF, rotate, fonts…" autocomplete="off"></label><button class="btn primary" id="enableAll">Enable all app features</button></div>
+  <p id="featureStatus" class="feature-status" role="status">App feature switches start on. Windows controls show their current system state.</p>
+  <div class="feature-layout"><nav class="feature-nav" aria-label="Catalogue sections"><a href="#conversionFeatures">Conversions</a><a href="#toolFeatures">Quick tools</a><a href="#includedFeatures">Built in</a></nav><div class="feature-content">
+  <section id="conversionFeatures" class="feature-section"><h2>Conversions</h2><p class="section-note">11 file families. Explore the exact destinations for each input format. Switching off a family removes its format choices, while its enabled tools stay available.</p><div id="conversionList" class="conversion-grid"></div></section>
+  <section id="toolFeatures" class="feature-section"><h2>Quick tools</h2><p class="section-note">Press Tab on the palette to switch from formats to tools. Batch tools work on the whole selection.</p><div id="toolList" class="feature-list"></div></section>
+  <section id="includedFeatures" class="feature-section"><h2>Built in, every time</h2><div class="included-list">
+    <article><h3>Originals stay safe <span>Always on</span></h3><p>Outputs use your folder and naming defaults. Replace sends the previous output to the Recycle Bin. Selected originals are never overwritten. A failed conversion cleans up its incomplete outputs.</p></article>
+    <article><h3>Work with a selection <span>Always on</span></h3><p>Browse for several files, drop into the app or use Explorer. Mixed selections show common supported destinations. Up to three files convert concurrently, and a failed file does not stop the others.</p></article>
+    <article><h3>Find and reuse your work <span>Included</span></h3><p>Search recorded conversions, filter images, video, audio or documents, open an output, reveal its folder or convert its source again.</p></article>
+    <article><h3>Progress and recovery <span>Always on</span></h3><p>The palette shows conversion progress, success and errors. Escape dismisses a selection. Releasing Ctrl lets an Explorer drag continue normally.</p></article>
+    <article><h3>Local processing <span>Always on</span></h3><p>Conversion engines run on your PC. Document rendering can load resources referenced by HTML or e-mail, such as linked images.</p></article>
+  </div></section>
+  <p id="featureEmpty" class="feature-empty" hidden>No features match your search.</p>
+  </div></div></div>
+  <div class="feature-foot"><span id="ver"></span><span>Changes save automatically on this PC.</span></div>
+</main>
+
+<div class="toast" id="toast" role="status"><i></i><span></span></div>
+<div id="pal"></div>
+
+<script src="../formats.js"></script>
+<script src="../features.js"></script>
+<script src="disc.js"></script>
+<script src="palette.js"></script>
+<script src="feature-settings.js"></script>
+<script src="workflows.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
