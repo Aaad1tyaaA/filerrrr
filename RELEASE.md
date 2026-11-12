@@ -38,6 +38,8 @@ Signing helps identify the publisher and build reputation; it does not guarantee
 
 87 Node tests and 17 Electron checks pass, including the unsigned manual-update path. Packaged executable and finished-installer checks are recorded separately under `D:\filerrrr\.tools\unsigned-1.2.3-*`. Historical 1.2.2 validation remains in the earlier evidence files.
 
+The finished Full installer is `release/Filerrrr-Setup-1.2.3.exe`, 208,134,079 bytes (198.49 MiB). Its 52 runtime files and native drop DLL match the current source; Windows reports `NotSigned`, as intended. SHA256: `a413ae03e4cb1132ef915a39c862b6aecbdd8e19b65c013206c704cc1a683b05`. The prepared executable passes actual worker conversion and whole-app manual-update/conversion checks.
+
 On 12 November 2026, the user confirmed successful physical Ctrl+drag conversion on both monitors. This is recorded as user-confirmed acceptance, separate from the automated two-display placement checks. Follow-up inspection of the isolated fixture folder found the original sample but no HTML output, recorded history or gesture trace, so the physical result was not independently verified from those artifacts.
 
 References: https://shop.certum.eu/standard-code-signing-in-the-cloud.html and https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/smartscreen-reputation
