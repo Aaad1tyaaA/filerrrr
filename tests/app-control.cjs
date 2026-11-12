@@ -18,6 +18,8 @@ app.whenReady().then(async()=>{
     const main=BrowserWindow.getAllWindows().find(window=>!window.isAlwaysOnTop());assert.ok(main);
     if(main.webContents.isLoadingMainFrame())await new Promise(resolve=>main.webContents.once('did-finish-load',resolve));
     const js=source=>main.webContents.executeJavaScript(source),input=path.join(work,'job.json');fs.writeFileSync(input,'{"works":true}');
+    const updateState=await js('api.updateStatus()');assert.equal(updateState.manual,true);assert.match(updateState.message,/Updates are manual/);
+    assert.equal(await js("document.getElementById('automaticUpdatesRow').hidden"),true);assert.equal(await js("document.getElementById('checkUpdates').hidden"),true);assert.equal(await js("document.getElementById('openReleases').textContent"),'Open releases');
     await js('api.setSettings({features:{history:false}})');
     const [result]=await js(`api.convert([${JSON.stringify(input)}],'formats','YAML')`);
     assert.ok(result.undo?.token);assert.ok(fs.existsSync(result.output));assert.equal((await js('api.history()')).items.length,0);

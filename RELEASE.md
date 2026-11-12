@@ -1,18 +1,20 @@
-# Release and signing
+# Filerrrr unsigned releases
 
 Filerrrr is an `.exe` desktop GUI. Users do not need to create an account, sign in, or use an AI service.
+
+The user has chosen not to purchase a signing certificate. Version 1.2.3 is intentionally unsigned; a paid certificate is not a prerequisite or an outstanding purchase task. Windows may show an unknown-publisher or SmartScreen warning.
 
 ## Hosting
 
 Installer repository: https://github.com/Aaad1tyaaA/filerrrr-releases
 
-The 1.2.2 preview installer, blockmap, SHA256 checksums and dependency notices are published as a prerelease. It is unsigned. Its automatic update downloads are deliberately blocked; there is no published stable `latest.yml` yet.
+Version 1.2.3 uses manual downloads from Releases. Installer, blockmap, SHA256 checksums and dependency notices are published together after validation. No stable `latest.yml` is published for unsigned builds.
 
-## Publisher certificate
+## Optional publisher signing
 
-Code signing identifies the publisher to Windows; it is unrelated to an app login. Buying a publicly trusted certificate requires the publisher's identity verification and payment with the certificate authority. Neither has been completed. No self-signed certificate is presented as public trust.
+The normal build works without signing credentials: run `npm ci`, then `npm run dist` on Windows with Visual Studio C++ Build Tools and the Windows SDK. No self-signed certificate or security-setting change is used to disguise the unsigned build.
 
-Candidate: Certum Standard Code Signing in the Cloud, advertised from EUR 209 at review time. Final term, taxes and regional eligibility must be checked directly with the provider. SimplySign connects its cloud key to the Windows certificate store; the private key does not need to be exported or placed in Git.
+The following signing tools are optional development infrastructure, outside the current unsigned delivery. They are not required to build, install or use Filerrrr.
 
 Once a real issued certificate is accessible in `CurrentUser\My`, set `FILERRRR_SIGNING_THUMBPRINT` to its thumbprint and run:
 
@@ -24,17 +26,17 @@ The script checks certificate validity, key availability and code-signing usage,
 
 ## Update behavior
 
-Settings includes automatic checks, download progress, and a user-controlled Restart and install action. There is no automatic install on quit. Active foreground or watch-folder conversions block restart.
+Settings shows manual updates and an Open releases button. Download the latest installer and run it when ready. Certificate-waiting messages and unavailable automatic-update controls are hidden. There is no background update download or automatic installation in an unsigned build.
 
-Update downloads are enabled only in a packaged app whose embedded GitHub provider, owner, repository and publisher identity match the configured policy. Windows Authenticode verification must return a valid signature with the same full publisher subject; unavailable verification, malformed responses or a different publisher fail closed. Unsigned previews cannot silently install updates.
+The dormant signed-updater path still requires a matching embedded publisher identity and a valid Windows signature; its protections have not been disabled to allow unsigned automatic installation. Unavailable verification, malformed responses or a different publisher fail closed.
 
-For the first signed stable release, bump the app version, build and test the signed installer, then publish the verified `.exe`, its `.blockmap`, checksums, notices and generated `latest.yml` as a normal GitHub release. Verify the live assets and test an update from an older signed installation. Do not publish update metadata for the unsigned preview or claim that the mock update tests establish a real signed upgrade.
+If signed distribution is chosen in the future, build and test the signed installer before publishing update metadata. Test an update from an older signed installation; mock update tests do not establish a real signed upgrade. This is not a gate for the current unsigned manual-download release.
 
 Signing helps identify the publisher and build reputation; it does not guarantee that SmartScreen warnings disappear on the first download. A validly signed Explorer MSIX uses normal per-user registration; the unsigned fallback still asks for administrator approval.
 
 ## Current verification
 
-86 Node tests and 17 Electron checks pass, plus whole-app sandboxed conversion/worker and packaged PDF/OCR checks. The finished 1.2.2 installer payload matches all 52 runtime files and the native drop DLL. Installer SHA256: `21f5d38e146747542bd17a6fb24abe0f77e2a7faf038e6c1c8862992b84edf48`.
+87 Node tests and 17 Electron checks pass, including the unsigned manual-update path. Packaged executable and finished-installer checks are recorded separately under `D:\filerrrr\.tools\unsigned-1.2.3-*`. Historical 1.2.2 validation remains in the earlier evidence files.
 
 On 12 November 2026, the user confirmed successful physical Ctrl+drag conversion on both monitors. This is recorded as user-confirmed acceptance, separate from the automated two-display placement checks. Follow-up inspection of the isolated fixture folder found the original sample but no HTML output, recorded history or gesture trace, so the physical result was not independently verified from those artifacts.
 

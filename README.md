@@ -24,11 +24,11 @@ npm run test:app
 npm run dist
 npm run test:packaged
 node tests/packaged-worker.cjs
-node tests/installer-payload.cjs release/Filerrrr-Setup-1.2.2.exe
+node tests/installer-payload.cjs release/Filerrrr-Setup-1.2.3.exe
 ```
 
 The Full installer includes the bundled offline engines. Core uses the matching, checksum-verified engine ZIP for media, OCR, PDF rendering and PSD support. Additional-format applications such as LibreOffice, Calibre, ImageMagick and rhwp are separate and can be connected in Settings. The built-in PPTX fallback exports slide text; advanced CAD coverage is limited.
 
 Loose-file packaging is intentional: previous packaged measurements found lower idle memory with this layout. Turning ASAR on requires fresh packaged native-module, PDF/OCR, worker and engine-pack tests. An archive is not a security boundary or code signing.
 
-Installer hosting is configured at [Filerrrr Releases](https://github.com/Aaad1tyaaA/filerrrr-releases/releases). The 1.2.2 build is an unsigned preview; signed automatic downloads remain gated until a real publisher certificate is issued. See [RELEASE.md](RELEASE.md) for signing, update behavior, validation and remaining gates. Development source has no remote Git repository configured. Third-party notices are bundled in `THIRD-PARTY-NOTICES.txt`; dependency licence files remain with the installed packages.
+Installer hosting is configured at [Filerrrr Releases](https://github.com/Aaad1tyaaA/filerrrr-releases/releases). Version 1.2.3 is intentionally unsigned, with manual downloads for updates. No paid certificate or app account is required. See [RELEASE.md](RELEASE.md) for build instructions, validation and Windows warning limitations. Development source has no remote Git repository configured. Third-party notices are bundled in `THIRD-PARTY-NOTICES.txt`; dependency licence files remain with the installed packages.

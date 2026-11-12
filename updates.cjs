@@ -14,7 +14,7 @@ function verifySignature(names,file,execute=execFile){return new Promise(resolve
 });}
 function create({packaged,config,load=()=>require('electron-updater').autoUpdater,notify=()=>{},log=()=>{}}){
   const ready=packaged&&policy(config);
-  let updater,state={phase:ready?'idle':'blocked',message:ready?'Ready to check for signed updates.':packaged?'Automatic updates will be available after the first signed release.':'Updates run in the installed app.'},timer,first,checking=false;
+  let updater,state={phase:ready?'idle':'blocked',manual:!ready,message:ready?'Ready to check for signed updates.':'Updates are manual. Download the latest installer from Releases.'},timer,first,checking=false;
   const send=patch=>{state={...state,...patch};notify(view());},view=()=>({...state,releaseUrl});
   function prepare(){if(!packaged||!policy(config))return false;if(updater)return true;updater=load();updater.autoDownload=false;updater.autoInstallOnAppQuit=false;updater.allowPrerelease=false;updater.allowDowngrade=false;updater.verifyUpdateCodeSignature=verifySignature;
     updater.on('checking-for-update',()=>send({phase:'checking',message:'Checking for updates…'}));
