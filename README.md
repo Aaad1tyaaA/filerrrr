@@ -24,7 +24,7 @@ npm run test:app
 npm run dist
 npm run test:packaged
 node tests/packaged-worker.cjs
-node tests/installer-payload.cjs release/Filerrrr-Setup-1.2.1.exe
+node tests/installer-payload.cjs release/Filerrrr-Setup-1.2.2.exe
 ```
 
 The Full installer includes the bundled offline engines. Core uses the matching, checksum-verified engine ZIP for media, OCR, PDF rendering and PSD support. Additional-format applications such as LibreOffice, Calibre, ImageMagick and rhwp are separate and can be connected in Settings. The built-in PPTX fallback exports slide text; advanced CAD coverage is limited.
