@@ -36,6 +36,6 @@ Signing helps identify the publisher and build reputation; it does not guarantee
 
 86 Node tests and 17 Electron checks pass, plus whole-app sandboxed conversion/worker and packaged PDF/OCR checks. The finished 1.2.2 installer payload matches all 52 runtime files and the native drop DLL. Installer SHA256: `21f5d38e146747542bd17a6fb24abe0f77e2a7faf038e6c1c8862992b84edf48`.
 
-Physical Ctrl+drag/cross-monitor acceptance is pending a user-operated test. Computer control cannot hold Ctrl across a drag; an isolated packaged app and disposable Explorer fixture have been opened. This boundary is separate from the automated two-display placement checks.
+On 12 November 2026, the user confirmed successful physical Ctrl+drag conversion on both monitors. This is recorded as user-confirmed acceptance, separate from the automated two-display placement checks. Follow-up inspection of the isolated fixture folder found the original sample but no HTML output, recorded history or gesture trace, so the physical result was not independently verified from those artifacts.
 
 References: https://shop.certum.eu/standard-code-signing-in-the-cloud.html and https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/smartscreen-reputation
