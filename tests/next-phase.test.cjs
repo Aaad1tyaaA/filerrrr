@@ -52,6 +52,8 @@ test('image presets change encoded size and media presets preserve lossless audi
   assert.ok(!small.error&&!best.error);assert.ok(fs.statSync(small.output).size<fs.statSync(best.output).size);
   const {argsFor}=require('../engines/media.cjs'),mp4=argsFor('MP4',{video:'small',resolution:'720',audio:128});assert.equal(mp4[mp4.indexOf('-crf')+1],'30');assert.match(mp4[mp4.indexOf('-vf')+1],/720/);assert.equal(mp4[mp4.indexOf('-b:a')+1],'128k');
   assert.ok(!argsFor('FLAC',{audio:320}).includes('-b:a'));assert.ok(!argsFor('WAV',{audio:320}).includes('-b:a'));
+  for(const T of ['OPUS','OGG','WEBM']){const a=argsFor(T,{audio:320});assert.equal(a[a.indexOf('-b:a')+1],'256k',`${T} caps Opus at 256 kbps so mono sources still encode`);}
+  assert.equal((a=>a[a.indexOf('-b:a')+1])(argsFor('MP3',{audio:320})),'320k');
 });
 test('engine packs reject unapproved manifests and checksum mismatches before publishing executables',async()=>{
   const packs=require('../engine-packs.cjs'),JSZip=require('jszip'),zip=new JSZip(),root=path.join(dir,'engines');packs.configure(root);

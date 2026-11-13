@@ -40,7 +40,9 @@ function argsFor(T,options={}){
   }
   if(options.audio&& !['WAV','AIFF','FLAC'].includes(T)&&!['SRT','VTT','ASS','LRC','GIF'].includes(T)){
     const q=args.indexOf('-q:a');if(q>=0)args.splice(q,2);
-    const i=args.indexOf('-b:a');if(i>=0)args[i+1]=`${options.audio}k`;else args.push('-b:a',`${options.audio}k`);
+    // Opus allows at most 256 kbps per channel, so a mono recording refuses 320; 256 is already transparent for Opus
+    const kbps=args.includes('libopus')?Math.min(options.audio,256):options.audio;
+    const i=args.indexOf('-b:a');if(i>=0)args[i+1]=`${kbps}k`;else args.push('-b:a',`${kbps}k`);
   }
   return args;
 }

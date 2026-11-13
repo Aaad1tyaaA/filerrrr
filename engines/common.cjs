@@ -26,8 +26,10 @@ function run(cmd, args, { input, onStderr } = {}) {
       signal?.removeEventListener('abort',stop);
       if (signal?.aborted) return reject(cancelled());
       if (code === 0) return resolve(Buffer.concat(out));
-      const last = tail.trim().split(/\r?\n/).filter(Boolean).pop() || `${path.basename(cmd)} failed (${code})`;
-      reject(new Error(last.replace(/^\[[^\]]+\]\s*/, '')));
+      // FFmpeg ends with a generic "Conversion failed!"; the line that names the cause comes earlier
+      const lines = tail.trim().split(/\r?\n/).filter(Boolean).map(line => line.replace(/^\[[^\]]+\]\s*/, ''));
+      const cause = lines.find(line => /error|invalid|unsupported|not supported|no such|denied/i.test(line) && !/^conversion failed/i.test(line));
+      reject(new Error(cause || lines.pop() || `${path.basename(cmd)} failed (${code})`));
     });
     if (input) { p.stdin.on('error', () => {}); p.stdin.end(input); }
   });
