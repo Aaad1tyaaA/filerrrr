@@ -1,4 +1,8 @@
 {
+  "1.3.1": [
+    "Fixed: converting recordings with mono sound to WEBM, OGG or OPUS failed at Best quality.",
+    "When a video or audio conversion fails, the message now says why."
+  ],
   "1.3.0": [
     "Choose your engines: video and audio, PDF pages and Photoshop, and scanned-text recognition are now optional downloads, picked in Setup or in Settings → Engines.",
     "Engines download from their official sources and are checked byte by byte before use.",

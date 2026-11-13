@@ -263,7 +263,10 @@ function registerShortcut(){
 let nativeDrop;
 
 // ---------- what's new: shown once after an update, never on a fresh install ----------
-function whatsNew(){const seen=store.data.lastVersion,version=app.getVersion();if(!seen||seen===version)return null;let notes=[];try{notes=require('./whats-new.json')[version]||[];}catch{/* no notes */}return notes.length?{version,notes}:null;}
+// notes for every version after the one last run, newest first (someone skipping a release still sees its changes)
+const versionParts=v=>String(v).split('.').map(Number),newer=(a,b)=>{const x=versionParts(a),y=versionParts(b);for(let i=0;i<3;i++)if(x[i]!==y[i])return x[i]>y[i];return false;};
+function whatsNew(){const seen=store.data.lastVersion,version=app.getVersion();if(!seen||seen===version)return null;let all={};try{all=require('./whats-new.json');}catch{/* no notes */}
+  const notes=Object.keys(all).filter(v=>newer(v,seen)&&!newer(v,version)).sort((a,b)=>newer(a,b)?-1:1).flatMap(v=>all[v]);return notes.length?{version,notes}:null;}
 function markFirstRunVersion(){
   // a profile that has never recorded a version: a fresh install, unless it already has history from an older Filerrrr
   if(store.data.lastVersion)return;const used=store.data.converted>0||store.data.history.length>0||store.data.onboarding;

@@ -1,7 +1,7 @@
 {
   "name": "filerrrr",
   "productName": "Filerrrr",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Convert files on your PC: hold Ctrl, drag, pick a format on the palette.",
   "main": "main.cjs",
   "private": true,
