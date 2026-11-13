@@ -40,7 +40,7 @@
     kinds: Object.entries(F.TOOLS).filter(([, list]) => list.includes(tool)).map(([kind]) => kind),
   }));
   const controls = [
-    ['ocr', 'English scan recognition', 'Recognize image-only PDF pages locally before exporting Word, text, HTML or Markdown. Requires the English OCR engine pack in the core edition.'],
+    ['ocr', 'English scan recognition', 'Recognize image-only PDF pages locally before exporting Word, text, HTML or Markdown. Requires the Scanned text recognition engine.'],
     ['input.wheel', 'Wheel selection', 'Scroll to move between palette choices.'],
     ['input.typing', 'Type to find a format', 'Type a format name on the palette. Backspace edits the search.'],
     ['input.keyboard', 'Keyboard selection', 'Use arrow keys to choose, Tab to switch to tools and Enter to convert. Escape always closes the palette.'],

@@ -21,3 +21,4 @@ build/*.exe
 coverage/
 .DS_Store
 Thumbs.db
+build/core-builder-alt.json

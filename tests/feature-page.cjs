@@ -49,8 +49,8 @@ module.exports = async function featurePage(fx) {
     await wait(`document.querySelectorAll('.feature-item').length === ${Features.all.length} && document.body.dataset.sizeComparison === 'true'`);
     await js("document.getElementById('settingsBtn').click()");
     assert.equal(await js("document.getElementById('catalogue').hidden&&!document.getElementById('everydaySettings').hidden"),true,'everyday settings open first');
-    assert.equal(await js("document.getElementById('imageQuality').value"),'balanced');
-    assert.equal(await js("document.getElementById('audioBitrate').value"),'192');
+    assert.equal(await js("document.getElementById('imageQuality').value"),'best');
+    assert.equal(await js("document.getElementById('audioBitrate').value"),'320');
     await js("document.getElementById('destination').value='converted';document.getElementById('destination').dispatchEvent(new Event('change'))");
     await wait("settings.preferences.destination==='converted'");
     assert.equal(createStore(file).data.preferences.destination,'converted','output control saves through IPC');

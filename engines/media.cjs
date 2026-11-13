@@ -31,7 +31,7 @@ const ARGS = {
 function argsFor(T,options={}){
   const args=[...(ARGS[T]||[])],crf={small:30,balanced:23,best:18}[options.video]||23;
   const replace=(flag,value)=>{const i=args.indexOf(flag);if(i>=0)args[i+1]=value;};
-  if(['MP4','MOV','MKV'].includes(T))replace('-crf',String(crf));
+  if(['MP4','MOV','MKV'].includes(T)){replace('-crf',String(crf));if(options.video==='best')replace('-preset','slow');} // slow: same quality in a smaller file
   if(T==='WEBM')replace('-crf',String(crf+10));
   if(options.video)replace('-b:v',({small:'1M',balanced:'3M',best:'6M'})[options.video]);
   if(['AVI','MPG','FLV'].includes(T)&&options.video)replace('-q:v',String(({small:8,balanced:4,best:2})[options.video]));

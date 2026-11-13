@@ -10,7 +10,7 @@
     <svg class="pal-meter" viewBox="0 0 260 260" role="progressbar" aria-label="Conversion progress" aria-valuemin="0" aria-valuemax="100" hidden><circle class="meter-track" cx="130" cy="130" r="123" pathLength="100"/><circle class="meter-value" cx="130" cy="130" r="123" pathLength="100"/></svg>
     <div class="pal-chips" role="listbox"></div>
     <div class="pal-presets" hidden><label>Preset <select aria-label="Saved preset"></select></label><button type="button">Use preset</button></div>
-    <div class="pal-export-options" hidden><label>Resolution <select class="pal-dpi" aria-label="PDF image resolution"><option value="72">72 dpi</option><option value="144" selected>144 dpi</option><option value="216">216 dpi</option><option value="300">300 dpi</option></select></label><label class="pal-quality-label">JPG quality <select class="pal-quality" aria-label="JPG quality"><option value="70">70%</option><option value="80">80%</option><option value="90" selected>90%</option><option value="100">100%</option></select></label></div>
+    <div class="pal-export-options" hidden><label>Resolution <select class="pal-dpi" aria-label="PDF image resolution"><option value="72">72 dpi</option><option value="144">144 dpi</option><option value="216">216 dpi</option><option value="300" selected>300 dpi</option></select></label><label class="pal-quality-label">JPG quality <select class="pal-quality" aria-label="JPG quality"><option value="70">70%</option><option value="80">80%</option><option value="90" selected>90%</option><option value="100">100%</option></select></label></div>
     <div class="pal-cap"><div class="pal-route"></div><div class="pal-hint"></div><div class="pal-note" role="status" aria-live="polite"></div></div>
     <section class="pal-work" aria-label="Conversion progress" hidden>
       <div class="pal-work-head"><strong class="pal-work-title" role="status" aria-live="polite"></strong><span class="pal-work-percent"></span></div>
@@ -194,6 +194,7 @@
       this.onCommit(pick);
     }
     start(paths, pick) {
+      this.chips.querySelectorAll('[title]').forEach(chip=>chip.removeAttribute('title')); // a native tooltip would linger over the result
       this.presetBox.hidden=true;
       this.lastPick=pick;this.el.classList.remove('batch-expanded');this.el.querySelector('.pal-batch').hidden=true;
       clearTimeout(this.undoTimer);this.undoToken=null;this.disc.phase='progress';this.disc.frac=0;this.disc.progress(0);
@@ -236,8 +237,8 @@
       this.el.dataset.result = cancelled.length?'cancelled':failed.length ? 'failed' : 'success';
       this.workBar.setAttribute('aria-valuenow', '100'); this.workBar.setAttribute('aria-valuetext', this.workTitle.textContent);
       this.workPercent.textContent = cancelled.length?'Stopped':failed.length ? '!' : '✓ Saved';
-      this.workStage.textContent = cancelled.length?`${outputs.length?`${outputs.length} completed outputs kept. `:''}Unfinished outputs removed. Originals unchanged.`:failed.length ? failed.map(r => r.error).join(' · ') : 'Files saved. Your originals are unchanged.';
-      this.workStage.title = this.workStage.textContent;
+      this.workStage.textContent = cancelled.length?`${outputs.length?`${outputs.length} completed outputs kept. `:''}Unfinished outputs removed. Originals unchanged.`:failed.length ? failed.map(r => r.error).join(' · ') : `Saved in ${Palette.folderLabel(outputs[0])}${new Set(outputs.map(Palette.folderOf)).size>1?' and other folders':''} · original kept`;
+      this.workStage.title = !failed.length&&!cancelled.length&&outputs[0]?Palette.folderOf(outputs[0]):this.workStage.textContent;
       if (this.output) { this.workFile.textContent = this.output.split(/[\\/]/).pop(); this.workFile.title = this.output; }
       this.workCount.textContent = `${outputs.length} ${outputs.length === 1 ? 'output file' : 'output files'}${failed.length ? ` · ${failed.length} failed` : ''}`;
       this.workActions.hidden = false;
@@ -311,5 +312,8 @@
     }
   }
   Palette.SIZE = SIZE; Palette.CENTER = C;
+  // where a result landed, short enough for the card: …\Downloads\photos
+  Palette.folderOf = file => String(file || '').replace(/[\\/][^\\/]*$/, '');
+  Palette.folderLabel = file => { const parts = Palette.folderOf(file).split(/[\\/]/).filter(Boolean); return parts.length > 2 ? '…\\' + parts.slice(-2).join('\\') : parts.join('\\') || 'the same folder'; };
   root.Palette = Palette;
 })(this);

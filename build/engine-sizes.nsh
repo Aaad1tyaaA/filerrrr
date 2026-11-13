@@ -1,0 +1,3 @@
+!define ENGINE_MEDIA_MB "28"
+!define ENGINE_RENDER_MB "15"
+!define ENGINE_OCR_MB "29"

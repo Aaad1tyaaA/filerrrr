@@ -45,13 +45,12 @@ function toast(text, bad = false) {
 const transition = fn => document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches ? document.startViewTransition(fn) : fn();
 
 // ---------- theme + mark ----------
-function drawMark() { // the only dots outside the palette: a tiny ring
+function drawMark() { // the only dots outside the palette: the dot-matrix F
   const g = $('mark').getContext('2d'); g.clearRect(0, 0, 40, 40);
-  for (let i = 0; i < 12; i++) {
-    const a = i / 12 * Math.PI * 2 - Math.PI / 2, on = i < 4;
-    g.fillStyle = on ? `rgb(${rgbVar('--acc')})` : css('--ink'); g.globalAlpha = on ? 1 : .85;
-    g.beginPath(); g.arc(20 + Math.cos(a) * 15, 20 + Math.sin(a) * 15, on ? 3.2 : 2.4, 0, 7); g.fill();
-  }
+  ['####', '#...', '###*', '#...', '#...'].forEach((row, y) => [...row].forEach((cell, x) => {
+    g.fillStyle = cell === '*' ? `rgb(${rgbVar('--acc')})` : css('--ink'); g.globalAlpha = cell === '.' ? .16 : 1;
+    g.beginPath(); g.arc(9 + x * 7.4, 5.2 + y * 7.4, 2.7, 0, 7); g.fill();
+  }));
   g.globalAlpha = 1;
 }
 function setTheme(t) { document.documentElement.dataset.theme = t; drawMark(); }
@@ -88,6 +87,8 @@ function showSettings(s) {
   document.body.dataset.sizeComparison = String(s.features?.sizeComparison !== false);
   FeatureSettings.update(s);
   updatePreferences(s);
+  offerEngines(s);
+  showWhatsNew(s);
   Workflows.update(s);
   render();
 }
@@ -119,12 +120,57 @@ $('drawerClose').onclick = () => drawer(false);
 function settingsPage(catalogue){$('everydaySettings').hidden=catalogue;$('catalogue').hidden=!catalogue;$('settingsTab').setAttribute('aria-pressed',String(!catalogue));$('formatsTab').setAttribute('aria-pressed',String(catalogue));$('settingsTitle').textContent=catalogue?'Formats & tools':'Settings';$('settingsSubtitle').textContent=catalogue?'Explore supported routes and hide what you do not use.':'Set your defaults. The palette stays focused on your files.';}
 $('settingsTab').onclick=()=>settingsPage(false);$('formatsTab').onclick=()=>settingsPage(true);
 const preferenceFields={destination:'destination',collision:'collision',imageQuality:'image',videoQuality:'video',videoResolution:'resolution',audioBitrate:'audio',trigger:'trigger',shortcut:'shortcut'};
-function updatePreferences(s){const p=s.preferences||{};for(const [id,key] of Object.entries(preferenceFields))if(p[key]!==undefined)$(id).value=p[key];for(const [id,key] of [['openFolder','openFolder'],['learnPicks','learn'],['favouriteRing','favourites']])sw(id,p[key]!==false&&(key!=='openFolder'||p[key]===true));$('folderRow').hidden=p.destination!=='chosen';$('outputFolder').textContent=p.folder||'No folder chosen';$('shortcutNote').textContent=s.shortcut?.value!=='off'&&!s.shortcut?.registered?'Shortcut unavailable. Choose another shortcut.':'Opens a file picker when Explorer has no selection';$('engineStatus').textContent=`Media: ${s.engines?.media===false?'not installed':'ready'}. English OCR: ${s.engines?.ocr===false?'not installed':'ready'}.`;const name=({ctrl:'Ctrl + drag',alt:'Alt + drag',shift:'Shift + drag',right:'Right drag'})[p.trigger]||'Ctrl + drag';$('gestureBtn').previousElementSibling.textContent=name;$('ctrlHint').textContent=` · ${name} in Explorer`;}
+function updatePreferences(s){const p=s.preferences||{};for(const [id,key] of Object.entries(preferenceFields))if(p[key]!==undefined)$(id).value=p[key];for(const [id,key] of [['openFolder','openFolder'],['learnPicks','learn'],['favouriteRing','favourites']])sw(id,p[key]!==false&&(key!=='openFolder'||p[key]===true));$('folderRow').hidden=p.destination!=='chosen';$('outputFolder').textContent=p.folder||'No folder chosen';$('shortcutNote').textContent=s.shortcut?.value!=='off'&&!s.shortcut?.registered?'Shortcut unavailable. Choose another shortcut.':'Opens a file picker when Explorer has no selection';renderEngines(s);const name=({ctrl:'Ctrl + drag',alt:'Alt + drag',shift:'Shift + drag',right:'Right drag'})[p.trigger]||'Ctrl + drag';$('gestureBtn').previousElementSibling.textContent=name;$('ctrlHint').textContent=` · ${name} in Explorer`;}
 for(const [id,key] of Object.entries(preferenceFields))$(id).onchange=()=>api.setSettings({preferences:{[key]:key==='audio'?+$(id).value:$(id).value}}).then(showSettings).catch(e=>toast(e.message,true));
 for(const [id,key] of [['openFolder','openFolder'],['learnPicks','learn'],['favouriteRing','favourites']])$(id).onclick=()=>api.setSettings({preferences:{[key]:$(id).getAttribute('aria-checked')!=='true'}}).then(showSettings);
 $('chooseFolder').onclick=async()=>{const folder=await api.pickFolder();if(folder)showSettings(await api.setSettings({preferences:{folder,destination:'chosen'}}));};
 $('forgetPicks').onclick=()=>api.clearPicks().then(showSettings);
-$('importEngines').onclick=async()=>{const b=$('importEngines');b.disabled=true;$('engineMessage').textContent='Checking engine pack…';try{showSettings(await api.importEngines());$('engineMessage').textContent='Engines ready.';}catch(e){$('engineMessage').textContent=e.message;}finally{b.disabled=false;}};
+$('importEngines').onclick=async()=>{const b=$('importEngines');b.disabled=true;$('engineMessage').textContent='Checking engine pack…';try{showSettings(await api.importEngines());$('engineMessage').textContent='Engine installed.';}catch(e){$('engineMessage').textContent=e.message;}finally{b.disabled=false;}};
+// ---------- engines: one row per optional pack ----------
+const mb=bytes=>`${Math.max(1,Math.round(bytes/1048576))} MB`;
+const engineState={};// id → fraction while downloading
+function renderEngines(s){
+  const host=$('engineList');if(!host)return;host.replaceChildren();
+  for(const pack of s.engines?.packs||[]){
+    const row=document.createElement('div'),text=document.createElement('div'),title=document.createElement('b'),note=document.createElement('small'),button=document.createElement('button');
+    row.className='row engine-row';row.dataset.engine=pack.id;title.textContent=pack.name;const busy=pack.id in engineState;
+    note.textContent=busy?`Downloading… ${Math.round(engineState[pack.id]*100)}%`:pack.builtIn?`${pack.detail} Built into this copy.`:pack.system?`${pack.detail} Found on this PC and in use: ${pack.system}`:pack.installed?`${pack.detail} Installed · ${mb(pack.size)} on disk.`:`${pack.detail} ${mb(pack.download)} download.`;
+    if(pack.system&&!busy)note.title=pack.system;
+    button.className='btn sm'+(!pack.installed&&!busy?' primary':'');button.disabled=pack.builtIn;
+    button.textContent=busy?'Cancel':pack.builtIn?'Built in':pack.system?`Use own copy · ${mb(pack.download)}`:pack.installed?'Remove':`Install · ${mb(pack.download)}`;
+    button.title=pack.system?'Download the version Filerrrr is tested with instead of the copy on this PC':'';
+    button.onclick=()=>busy?api.cancelEngine(pack.id):pack.system?installEngine(pack.id):pack.installed?removeEngine(pack):installEngine(pack.id);
+    text.append(title,note);row.append(text,button);host.append(row);
+  }
+}
+async function installEngine(id){
+  if(id in engineState)return;engineState[id]=0;renderEngines(settings);
+  try{const next=await api.downloadEngine(id);delete engineState[id];showSettings(next);toast(`${next.engines.packs.find(p=>p.id===id).name} installed`);}
+  catch(e){delete engineState[id];renderEngines(settings);toast(String(e.message||e).replace(/^Error invoking remote method '[^']+': (Error: )?/,''),true);}
+}
+async function removeEngine(pack){
+  try{const next=await api.removeEngine(pack.id);showSettings(next);toast(next.restartNeeded?`${pack.name} will be removed when Filerrrr restarts`:`${pack.name} removed`);}
+  catch(e){toast(String(e.message||e).replace(/^Error invoking remote method '[^']+': (Error: )?/,''),true);}
+}
+// progress for every download, including the ones the installer asked for; null means it ended
+api.onEngineProgress(({id,fraction})=>{if(fraction===null){delete engineState[id];return;}const fresh=!(id in engineState);engineState[id]=fraction;const note=document.querySelector(`[data-engine="${id}"] small`);if(fresh&&settings)renderEngines(settings);else if(note)note.textContent=`Downloading… ${Math.round(fraction*100)}%`;});
+// after an update: what changed, once
+let whatsNewShown=false;
+function showWhatsNew(s){
+  if(whatsNewShown||!s.whatsNew||$('enginePicker').open)return;whatsNewShown=true;
+  $('whatsNewTitle').textContent=`What’s new in Filerrrr ${s.whatsNew.version}`;
+  $('whatsNewList').replaceChildren(...s.whatsNew.notes.map(note=>{const li=document.createElement('li');li.textContent=note;return li;}));
+  $('whatsNew').onclose=async()=>showSettings(await api.setSettings({whatsNewSeen:true}));$('whatsNew').showModal();
+}
+// first run: ask once which optional engines to add
+let pickerShown=false;
+function offerEngines(s){
+  if(pickerShown||!s.enginePicker)return;pickerShown=true;
+  const list=$('enginePickList');list.replaceChildren();
+  for(const pack of s.engines.packs.filter(p=>!p.installed&&!p.builtIn)){const label=document.createElement('label'),box=document.createElement('input'),text=document.createElement('span');label.className='workflow-check engine-pick';box.type='checkbox';box.value=pack.id;text.innerHTML='';const b=document.createElement('b');b.textContent=`${pack.name} · ${mb(pack.download)}`;const small=document.createElement('small');small.textContent=pack.detail;text.append(b,small);label.append(box,text);list.append(label);}
+  $('enginePicker').onclose=async()=>{const chosen=$('enginePicker').returnValue==='install'?[...list.querySelectorAll('input:checked')].map(box=>box.value):[];showSettings(await api.setSettings({enginesOffered:true}));for(const id of chosen)installEngine(id);};
+  $('enginePicker').showModal();
+}
 FeatureSettings.init(showSettings);
 Workflows.init({saved:showSettings,toast,run:(files,pick)=>{if(pal.isOpen)return;pending=files;cx=innerWidth/2;cy=Math.min(innerHeight/2,380);palEl.style.left=cx-Palette.CENTER+'px';palEl.style.top=cy-Palette.CENTER+'px';pal.open({mode:'click',label:files.length>1?`${files.length} FILES`:(Formats.extOf(files[0])||'FILE').toUpperCase(),targets:[],tools:[]});pal.disc.progress(0);convert(pick);}});
 function renderUpdates(value){const state=value||{phase:'blocked',manual:true,message:'Updates are manual. Download the latest installer from Releases.'};$('updateStatus').textContent=state.message;$('automaticUpdatesRow').hidden=state.manual===true;$('checkUpdates').hidden=state.manual===true;$('checkUpdates').disabled=['blocked','checking','downloading','ready'].includes(state.phase);$('downloadUpdate').hidden=state.phase!=='available';$('installUpdate').hidden=state.phase!=='ready';$('updateProgress').hidden=state.phase!=='downloading';$('updateProgress').value=state.percent||0;}

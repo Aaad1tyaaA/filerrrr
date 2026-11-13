@@ -38,7 +38,7 @@ const secs = m => +m[1] * 3600 + +m[2] * 60 + +m[3];
 function ffmpeg(args, onProgress, input) {
   let dur = 0;
   const binary=require('../engine-packs.cjs').file('media');
-  if(!fs.existsSync(binary))throw new Error('The media engine is not installed. Import the Filerrrr engine pack in Settings.');
+  if(!fs.existsSync(binary))throw new Error('Video & audio is not installed. Install it in Settings → Engines.');
   return run(binary, ['-hide_banner', ...(input ? [] : ['-nostdin']), '-y', ...args], {
     input,
     onStderr: s => {

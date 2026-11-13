@@ -43,12 +43,14 @@ async function trace(img, out) {
   await fsp.writeFile(out, svg);
 }
 
-async function encode(img, T, out, quality = 82) {
+// Best keeps full colour resolution (sharp coloured text) and stays lossless when the source was lossless.
+async function encode(img, T, out, quality = 82, losslessSource = false) {
   const viaPng = async codec => ffmpeg(['-f', 'png_pipe', '-i', 'pipe:0', '-c:v', codec, out], null, await img.png().toBuffer());
+  const best = quality >= 95;
   switch (T) {
-    case 'JPG': return img.flatten({ background: '#ffffff' }).jpeg({ quality, mozjpeg: true }).toFile(out);
+    case 'JPG': return img.flatten({ background: '#ffffff' }).jpeg({ quality, mozjpeg: true, chromaSubsampling: best ? '4:4:4' : '4:2:0' }).toFile(out);
     case 'PNG': return img.png({ compressionLevel: 9, palette: quality < 80 }).toFile(out);
-    case 'WEBP': return img.webp({ quality }).toFile(out);
+    case 'WEBP': return img.webp(best && losslessSource ? { lossless: true, effort: 6 } : { quality, smartSubsample: true, effort: best ? 6 : 4 }).toFile(out);
     case 'AVIF': return img.avif({ quality: Math.round(quality * .65) }).toFile(out);
     case 'TIFF': return img.tiff({ compression: 'lzw' }).toFile(out);
     case 'GIF': return img.gif().toFile(out);
@@ -62,11 +64,12 @@ async function encode(img, T, out, quality = 82) {
   throw new Error(`Can't write ${T}`);
 }
 
+const LOSSLESS = new Set(['png', 'bmp', 'tiff', 'gif', 'qoi', 'tga', 'ico', 'svg', 'psd']);
 async function convert(input, T, out,options={},edit={}) {
   let img=await load(input, { animated: T === 'GIF' || T === 'WEBP' });
   if(edit.crop){const m=await img.metadata(),c=edit.crop;if(c.left+c.width>(m.autoOrient?.width||m.width)||c.top+c.height>(m.autoOrient?.height||m.height))throw new Error('Crop rectangle extends outside the image');img=img.extract(c);}
   if(edit.resize)img=img.resize({width:edit.resize,withoutEnlargement:true});if(edit.stripMetadata===false)img=img.keepMetadata();
-  return encode(img,T,out,({small:60,balanced:82,best:95})[options.image]||82);
+  return encode(img,T,out,({small:60,balanced:82,best:95})[options.image]||82,LOSSLESS.has(F.norm(F.extOf(input))));
 }
 
 const SAME = { jpg: 'JPG', png: 'PNG', webp: 'WEBP', avif: 'AVIF', tiff: 'TIFF', gif: 'GIF', bmp: 'BMP', tga: 'TGA', qoi: 'QOI' };

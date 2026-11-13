@@ -42,6 +42,7 @@ contextBridge.exposeInMainWorld('api', {
   pickInputFolder:()=>ipcRenderer.invoke('pick-input-folder'),
   clearPicks:()=>ipcRenderer.invoke('picks:clear'),
   importEngines:()=>ipcRenderer.invoke('engines:import'),
+  downloadEngine:id=>ipcRenderer.invoke('engines:download',id),cancelEngine:id=>ipcRenderer.invoke('engines:cancel',id),removeEngine:id=>ipcRenderer.invoke('engines:remove',id),onEngineProgress:on('engines:progress'),
   watchStatus:()=>ipcRenderer.invoke('watch:status'),onWatchStatus:on('watch:status'),
   readLog:()=>ipcRenderer.invoke('support:log'),notices:()=>ipcRenderer.invoke('support:notices'),
   tutorialSample:()=>ipcRenderer.invoke('tutorial:sample'),imagePreview:file=>ipcRenderer.invoke('editor:preview',file),

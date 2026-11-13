@@ -4,16 +4,20 @@ const fs = require('fs');
 const Features = require('./features.js');
 const Preferences=require('./preferences.cjs'),Picks=require('./picks.cjs');
 
-const DEFAULTS = { paused: false, theme: 'system', contextMenu: true, menuOffered: false, converted: 0, saved: 0, history: [], features: Features.defaults,preferences:Preferences.defaults,picks:{},recipes:[],watchFolders:[],onboarding:false,external:{},automaticUpdates:true };
+const DEFAULTS = { paused: false, theme: 'system', contextMenu: true, menuOffered: false, converted: 0, saved: 0, history: [], features: Features.defaults,preferences:Preferences.defaults,picks:{},recipes:[],watchFolders:[],onboarding:false,enginesOffered:false,qualityBest:true,lastVersion:'',external:{},automaticUpdates:true };
 
 function sanitize(raw) {
   const d = { ...DEFAULTS };
   d.features = Features.sanitize(raw?.features);
-  d.preferences=Preferences.sanitize(raw?.preferences);d.picks=Picks.sanitize(raw?.picks);
+  d.preferences=Preferences.sanitize(raw?.preferences);
+  // one-time move to Best quality for copies still on the old untouched defaults (Balanced, Balanced, 192 kbps)
+  const p=raw?.preferences;if(raw&&raw.qualityBest!==true&&p&&p.image==='balanced'&&p.video==='balanced'&&p.audio===192)d.preferences={...d.preferences,image:'best',video:'best',audio:320};d.picks=Picks.sanitize(raw?.picks);
   d.recipes=require('./recipes.cjs').sanitize(raw?.recipes);d.watchFolders=require('./watch-folders.cjs').sanitize(raw?.watchFolders);d.onboarding=raw?.onboarding===true;
   d.external=Object.fromEntries(['office','books','image','hwp'].filter(key=>typeof raw?.external?.[key]==='string'&&require('path').isAbsolute(raw.external[key])).map(key=>[key,raw.external[key]]));
   if (!raw || typeof raw !== 'object') return d;
   if (typeof raw.paused === 'boolean') d.paused = raw.paused;
+  if (raw.enginesOffered === true) d.enginesOffered = true;
+  if (typeof raw.lastVersion === 'string' && /^\d+\.\d+\.\d+$/.test(raw.lastVersion)) d.lastVersion = raw.lastVersion;
   if(typeof raw.automaticUpdates==='boolean')d.automaticUpdates=raw.automaticUpdates;
   if (['system', 'light', 'dark'].includes(raw.theme)) d.theme = raw.theme;
   if (typeof raw.contextMenu === 'boolean') d.contextMenu = raw.contextMenu;

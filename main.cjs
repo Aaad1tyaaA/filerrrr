@@ -262,10 +262,17 @@ function registerShortcut(){
 }
 let nativeDrop;
 
+// ---------- what's new: shown once after an update, never on a fresh install ----------
+function whatsNew(){const seen=store.data.lastVersion,version=app.getVersion();if(!seen||seen===version)return null;let notes=[];try{notes=require('./whats-new.json')[version]||[];}catch{/* no notes */}return notes.length?{version,notes}:null;}
+function markFirstRunVersion(){
+  // a profile that has never recorded a version: a fresh install, unless it already has history from an older Filerrrr
+  if(store.data.lastVersion)return;const used=store.data.converted>0||store.data.history.length>0||store.data.onboarding;
+  store.set({lastVersion:used?'0.0.0':app.getVersion()});
+}
 // ---------- settings ----------
 const settingsView = () => ({ paused: store.data.paused, theme: store.data.theme, effectiveTheme: effectiveTheme(), contextMenu: store.data.contextMenu,
   openAtLogin: app.getLoginItemSettings({ args: ['--hidden'] }).openAtLogin, platform: process.platform, version: app.getVersion(),automaticUpdates:store.data.automaticUpdates,updates:updates?.view(),
-  topMenu: topMenuState, menuOffered: store.data.menuOffered, features: store.data.features,preferences:store.data.preferences,shortcut:shortcutState,engines:require('./engine-packs.cjs').status(),recipes:store.data.recipes,watchFolders:store.data.watchFolders,watchStatus:watcher?.view()||[],onboarding:store.data.onboarding,autoTutorial:!testProfile,extended:require('./engines/extended.cjs').status() });
+  topMenu: topMenuState, menuOffered: store.data.menuOffered, features: store.data.features,preferences:store.data.preferences,shortcut:shortcutState,engines:require('./engine-packs.cjs').status(),recipes:store.data.recipes,watchFolders:store.data.watchFolders,watchStatus:watcher?.view()||[],onboarding:store.data.onboarding,autoTutorial:!testProfile,whatsNew:whatsNew(),enginePicker:(!testProfile||process.env.FILERRRR_TEST_ENGINE_PICKER==='1')&&!store.data.enginesOffered&&require('./engine-packs.cjs').status().packs.some(pack=>!pack.installed),extended:require('./engines/extended.cjs').status() });
 function setSettings(patch) {
   const next = {};
   if (typeof patch.paused === 'boolean') next.paused = patch.paused;
@@ -278,6 +285,8 @@ function setSettings(patch) {
   if(Array.isArray(patch.recipes))next.recipes=Recipes.sanitize(patch.recipes);
   if(Array.isArray(patch.watchFolders))next.watchFolders=require('./watch-folders.cjs').sanitize(patch.watchFolders);
   if(patch.onboarding===true)next.onboarding=true;
+  if(patch.enginesOffered===true)next.enginesOffered=true;
+  if(patch.whatsNewSeen===true)next.lastVersion=app.getVersion();
   store.set(next);
   if (!testProfile&&typeof patch.openAtLogin === 'boolean') app.setLoginItemSettings({ openAtLogin: patch.openAtLogin, args: ['--hidden'] });
   if ('contextMenu' in next) syncShellIntegration();
@@ -294,7 +303,7 @@ function setSettings(patch) {
 // notification centre, so it's clear afterwards whether a file was converted. Errors are always shown.
 const notifications = new Set(); // keep them referenced, or their click handler can be collected
 function notifyResult(results,undo,owner) {
-  if (testProfile||!Notification.isSupported()) return;
+  if (testProfile||!Notification?.isSupported?.()) return;
   const ok = results.filter(r => !r.error&&!r.cancelled), failed = results.filter(r => r.error&&!r.cancelled),cancelled=results.filter(r=>r.cancelled);
   if (!failed.length && store.data.features?.successMessages === false) return;
   const name = p => path.basename(String(p || ''));
@@ -309,7 +318,7 @@ function notifyResult(results,undo,owner) {
     body = `${name(failed[0].input)}: ${failed[0].error}`;
   } else {
     title = ok.length === 1 && outputs.length === 1 ? `${name(ok[0].input)} → ${name(outputs[0])}` : `${outputs.length} files saved`;
-    body = 'Files saved. Click to show the output folder.';
+    body = `Saved in ${path.dirname(outputs[0])}. Click to show the file.`;
   }
   const n = new Notification({ title, body: String(body).slice(0, 240), icon: ICON_PNG, timeoutType: failed.length ? 'never' : 'default',
     actions:undo?[{type:'button',text:'Undo'}]:[] });
@@ -354,16 +363,25 @@ ipcMain.handle('convert', async (e, paths, face, pick, conversionOptions) => {
   try{
     if((await Promise.all(paths.map(file=>fs.promises.lstat(file).then(s=>s.isDirectory(),()=>false)))).some(Boolean))throw new Error('Inspect folders first and confirm the file count');
     if(controller.signal.aborted)return paths.map(input=>({input,error:'Cancelled',cancelled:true}));
-    const results = await run(paths, face, pick, (fraction, detail) => send(BrowserWindow.fromWebContents(e.sender), 'convert:progress', { fraction, ...detail }), {...exportOptions,...(recipe?Recipes.options(recipe):{}),edit,external:store.data.external,preferences:recipe?.preferences||store.data.preferences,recycle:file=>shell.trashItem(file),signal:controller.signal});
+    const results = await run(paths, face, pick, (fraction, detail) => { send(BrowserWindow.fromWebContents(e.sender), 'convert:progress', { fraction, ...detail }); taskbar(fraction, detail); }, {...exportOptions,...(recipe?Recipes.options(recipe):{}),edit,external:store.data.external,preferences:recipe?.preferences||store.data.preferences,recycle:file=>shell.trashItem(file),signal:controller.signal});
     results.filter(r => r.error&&!r.cancelled).forEach(r => log('convert failed', r.input, face, pick, r.error));
     record(results, face, pick);
     tray?.setContextMenu(trayMenu());
     const undo=await undoManager.register(results,owner);
     if(store.data.preferences.openFolder&&results.some(result=>result.output))shell.showItemInFolder(results.find(result=>result.output).output);
-    if (e.sender === overlay?.webContents) notifyResult(results,undo,owner);
+    taskbar(null);
+    const away = !win || win.isDestroyed() || !win.isVisible() || !win.isFocused();
+    if (e.sender === overlay?.webContents || away) notifyResult(results,undo,owner);
+    if (e.sender === win?.webContents && away && !win.isDestroyed()) win.flashFrame(true); // taskbar button blinks until the window is focused
     return results.map(({ input, output, outputs, error, cancelled, before, after, count }) => ({ input, output, outputs, error, cancelled, before, after, count,undo }));
-  }finally{activeJobs.delete(owner);e.sender.removeListener?.('destroyed',destroyed);}
+  }finally{activeJobs.delete(owner);if(!activeJobs.size)taskbar(null);e.sender.removeListener?.('destroyed',destroyed);}
 });
+// conversion progress on the taskbar button, so a running or finished job is visible even when Filerrrr is behind other windows
+function taskbar(fraction, detail) {
+  if (!win || win.isDestroyed()) return;
+  if (fraction === null) win.setProgressBar(-1);
+  else win.setProgressBar(detail?.indeterminate ? 2 : Math.max(0.02, Math.min(1, fraction || 0)), { mode: detail?.indeterminate ? 'indeterminate' : 'normal' });
+}
 ipcMain.handle('convert:cancel',e=>{const job=activeJobs.get(e.sender.id);if(!job)return false;job.abort();return true;});
 async function performUndo(token,owner){
   const result=await undoManager.undo(token,owner);
@@ -416,6 +434,34 @@ ipcMain.handle('pick-files', async () => (await dialog.showOpenDialog(win, { pro
 ipcMain.handle('pick-folder',async()=> (await dialog.showOpenDialog({properties:['openDirectory','createDirectory']})).filePaths[0]||null);
 ipcMain.handle('pick-input-folder',async()=> (await dialog.showOpenDialog({properties:['openDirectory']})).filePaths);
 ipcMain.handle('picks:clear',()=>{store.set({picks:{}});return settingsView();});
+// engine packs: download on request (one at a time per pack), with progress pushed to the window
+const engineJobs=new Map();
+// One download per engine; progress (and fraction null when it ends) goes to the window whoever started it.
+async function downloadEngine(id){
+  const Packs=require('./engine-packs.cjs');if(!Packs.PACKS[id])throw new Error('Unknown engine');if(engineJobs.has(id))return engineJobs.get(id).done;
+  const controller=new AbortController();let last=0;
+  const done=(async()=>{
+    try{await Packs.download(id,{fetch:(url,options)=>require('electron').net.fetch(url,options),signal:controller.signal,onProgress:f=>{const now=Date.now();if(now-last>120||f>=1){last=now;send(win,'engines:progress',{id,fraction:f});}}});}
+    catch(error){log('engine download',id,error);throw new Error(controller.signal.aborted?'Download cancelled':String(error.message||error));}
+    finally{engineJobs.delete(id);send(win,'engines:progress',{id,fraction:null});send(win,'settings',settingsView());send(overlay,'settings',settingsView());}
+  })();
+  engineJobs.set(id,{abort:()=>controller.abort(),done});return done;
+}
+ipcMain.handle('engines:download',async(_e,id)=>{await downloadEngine(id);return settingsView();});
+// Engines picked in the installer download when Filerrrr first starts, in the background, one after another.
+async function installChosenEngines(){
+  const choiceFile=path.join(app.getPath('userData'),'engine-choice.json');let ids=[];
+  try{ids=JSON.parse(fs.readFileSync(choiceFile,'utf8')).install;fs.rmSync(choiceFile,{force:true});}catch{return;}
+  store.set({enginesOffered:true});send(win,'settings',settingsView());
+  const Packs=require('./engine-packs.cjs'),wanted=(Array.isArray(ids)?ids:[]).filter(id=>Packs.PACKS[id]&&!Packs.status().packs.find(p=>p.id===id)?.installed);
+  for(const id of wanted){
+    const name=Packs.PACKS[id].name;
+    try{await downloadEngine(id);if(!testProfile&&Notification.isSupported())new Notification({title:`${name} is ready`,body:'Downloaded, checked and installed.',icon:ICON_PNG}).show();}
+    catch(error){if(!testProfile&&Notification.isSupported())new Notification({title:`${name} could not be downloaded`,body:`${error.message} Try again in Settings → Engines.`,icon:ICON_PNG}).show();}
+  }
+}
+ipcMain.handle('engines:cancel',(_e,id)=>{engineJobs.get(id)?.abort();return true;});
+ipcMain.handle('engines:remove',async(_e,id)=>{if(activeJobs.size)throw new Error('Wait for the running conversion to finish');const r=await require('./engine-packs.cjs').remove(id);return {...settingsView(),restartNeeded:r.restartNeeded};});
 ipcMain.handle('engines:import',async()=>{const file=(await dialog.showOpenDialog({properties:['openFile'],filters:[{name:'Filerrrr engine pack',extensions:['zip']}]})).filePaths[0];if(file)await require('./engine-packs.cjs').install(file);return settingsView();});
 ipcMain.handle('watch:status',()=>watcher?.view()||[]);
 ipcMain.handle('updates:status',()=>updates?.view());
@@ -471,7 +517,7 @@ app.whenReady().then(() => {
   const startPaths = contextMenu.pathsFromArgv(process.argv);
   pendingFromArgv = startPaths.length > 0;
   if((testProfile&&process.env.FILERRRR_TEST_WINDOW==='1')||(!process.argv.includes('--hidden')&&!pendingFromArgv))createWindow();
-  tray = new Tray(nativeImage.createFromPath(ICON_PNG).resize({ width: 16, height: 16 }));
+  tray = new Tray(nativeImage.createFromPath(ICON_PNG).resize({ width: 16, height: 16, quality: 'best' }));
   tray.setToolTip('Filerrrr'); tray.setContextMenu(trayMenu()); tray.on('click', showWindow);
   nativeTheme.on('updated', () => store.data.theme === 'system' && applyTheme());
   if(!(testProfile&&process.env.FILERRRR_TEST_NO_HOOK==='1'))startHook();
@@ -479,4 +525,6 @@ app.whenReady().then(() => {
   syncShellIntegration();
   refreshTopMenu(true).catch(e => log('top menu startup', e));
   if (pendingFromArgv) receivePaths(startPaths);
+  markFirstRunVersion();
+  installChosenEngines().catch(error=>log('chosen engines',error));
 }).catch(e => log('startup', e));

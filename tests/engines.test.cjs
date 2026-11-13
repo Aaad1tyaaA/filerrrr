@@ -86,7 +86,7 @@ test('PDF pages to pictures and text', async () => {
   const [r] = await run([fx.p('doc.pdf')], 'formats', 'PNG');
   assert.equal(r.outputs.length, 2);
   assert.deepEqual(r.outputs.map(o => path.basename(o)), ['doc-p1.png', 'doc-p2.png']);
-  assert.equal((await sharp(r.outputs[0]).metadata()).width, 600);
+  assert.equal((await sharp(r.outputs[0]).metadata()).width, 1250); // 300 dpi by default
   await ok('doc.pdf', 'formats', 'JPG');
   const txt = fs.readFileSync((await ok('doc.pdf', 'formats', 'TXT')).output, 'utf8');
   assert.match(txt, /Hello page one/); assert.match(txt, /Second page/);

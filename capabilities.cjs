@@ -10,7 +10,6 @@ async function inspectFile(input) {
     await fs.access(input, require('fs').constants.R_OK);
     if (!stat.size) throw new Error('This file is empty');
     if (Formats.kindOfExt(Formats.extOf(input)) !== 'pdf') return {};
-    if(!require('./engine-packs.cjs').status().canvas){const doc=await require('pdf-lib').PDFDocument.load(await fs.readFile(input));return {pages:doc.getPageCount(),textPages:0,requiresRenderEngine:true};}
     const key = `${input}:${stat.size}:${stat.mtimeMs}`;
     if (!cache.has(key)) {
       if (cache.size >= 32) cache.delete(cache.keys().next().value);
@@ -28,7 +27,7 @@ async function inspectFile(input) {
 
 async function inspect(paths, flags) {
   const ocr = flags?.ocr !== false && require('./engines/ocr.cjs').available();
-  const ocrHelp=flags?.ocr===false?'Enable English scan recognition in Settings.':'Import the English OCR engine pack in Settings.';
+  const ocrHelp=flags?.ocr===false?'Enable English scan recognition in Settings.':'Install Scanned text recognition in Settings → Engines.';
   const options = Features.choicesFor(paths.map(Formats.extOf), flags), files = new Array(paths.length);
   const extended=require('./engines/extended.cjs'),engines=extended.status();
   const mediaAvailable=require('./engine-packs.cjs').status().media;
@@ -40,10 +39,11 @@ async function inspect(paths, flags) {
   }));
   const error = files.find(file => file.error);
   const scanned = files.some(file => file.pages && !file.textPages);
-  options.choices = options.choices.map(choice => ({ ...choice, reason: choice.reason || (!mediaAvailable&&(needsMedia||['BMP','TGA','QOI','MP4','WEBM'].includes(choice.value))&&!(paths.every(file=>['srt','vtt'].includes(Formats.extOf(file)))&&['SRT','VTT'].includes(choice.value))?'Import the media engine pack in Settings to use this format.':error
+  options.choices = options.choices.map(choice => ({ ...choice, reason: choice.reason || (!mediaAvailable&&(needsMedia||['BMP','TGA','QOI','MP4','WEBM'].includes(choice.value))&&!(paths.every(file=>['srt','vtt'].includes(Formats.extOf(file)))&&['SRT','VTT'].includes(choice.value))?'Install Video & audio in Settings → Engines to use this format.':error
     ? `${error.name}: ${error.error}` : scanned && !ocr && TEXT.has(choice.value) ? `No selectable text. ${ocrHelp}` : '') }));
   options.choices=options.choices.map(choice=>{const needed=paths.map(file=>extended.requirement(Formats.extOf(file),choice.value)).find(key=>key&&!engines[key]?.ready);return needed?{...choice,reason:`Configure the ${needed} converter in Settings → Additional formats`}:choice;});
-  if(!canvasAvailable&&paths.some(file=>Formats.extOf(file)==='pdf'))options.choices=options.choices.map(choice=>['PNG','JPG'].includes(choice.value)?{...choice,reason:'Import the engine pack in Settings for PDF image rendering'}:choice);
+  if(!canvasAvailable&&paths.some(file=>Formats.extOf(file)==='pdf'))options.choices=options.choices.map(choice=>['PNG','JPG'].includes(choice.value)?{...choice,reason:'Install PDF pages & Photoshop in Settings → Engines to export pages as images'}:choice);
+  if(!canvasAvailable&&paths.some(file=>Formats.extOf(file)==='psd'))options.choices=options.choices.map(choice=>({...choice,reason:choice.reason||'Install PDF pages & Photoshop in Settings → Engines to open PSD files'}));
   options.targets = options.targets.filter(value => !options.choices.find(choice => choice.value === value)?.reason);
   if (error) options.tools = [];
   if(!mediaAvailable&&needsMedia)options.tools=options.tools.filter(tool=>tool==='ZIP');

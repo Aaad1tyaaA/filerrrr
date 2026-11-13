@@ -279,6 +279,7 @@ svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-widt
   <header class="feature-heading"><div><h1 id="settingsTitle">Settings</h1><p id="settingsSubtitle">Set your defaults. The palette stays focused on your files.</p></div></header>
   <nav class="settings-tabs" aria-label="Preferences"><button id="settingsTab" aria-pressed="true">Settings</button><button id="formatsTab" aria-pressed="false">Formats &amp; tools</button></nav>
   <div id="everydaySettings">
+  <section class="settings-section" id="enginesSection"><h2>Engines</h2><p class="section-note">Images, documents, spreadsheets, data, archives and fonts work out of the box. Add only what you need: each engine downloads once, is checked against this build, and then works offline.</p><div id="engineList"></div><p class="section-note">No internet on this PC? <button class="btn sm" id="importEngines">Install from a downloaded pack…</button></p><p id="engineMessage" class="section-note" role="status"></p></section>
   <section class="settings-section"><h2>Files and quality</h2>
     <div class="row"><label for="destination"><b>Save converted files</b><small>Originals always stay in place</small></label><select id="destination"><option value="original">Next to original</option><option value="converted">Converted subfolder</option><option value="chosen">Chosen folder</option></select></div>
     <div class="row" id="folderRow" hidden><div><b>Output folder</b><small id="outputFolder">No folder chosen</small></div><button class="btn sm" id="chooseFolder">Choose…</button></div>
@@ -304,7 +305,7 @@ svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-widt
   </section>
   <section class="settings-section"><h2>Updates</h2><div class="row" id="automaticUpdatesRow" hidden><label for="automaticUpdates"><b>Automatically check for updates</b><small>Checks GitHub Releases for signed releases while Filerrrr is running. No account needed.</small></label><button class="switch" id="automaticUpdates" role="switch" aria-checked="true" aria-label="Automatically check for updates"></button></div><p id="updateStatus" class="section-note" role="status"></p><progress id="updateProgress" max="100" hidden aria-label="Update download progress"></progress><div class="settings-inline"><button class="btn" id="checkUpdates" hidden>Check for updates</button><button class="btn" id="downloadUpdate" hidden>Download update</button><button class="btn primary" id="installUpdate" hidden>Restart and install</button><button class="btn" id="openReleases">Open releases</button></div></section>
   <details class="settings-section"><summary>Controls and history preferences</summary><div id="controlList" class="feature-list"></div></details>
-  <section class="settings-section"><h2>Optional engines</h2><p id="engineStatus" class="section-note"></p><p class="section-note">The core edition uses a separate engine pack for media, English scan recognition, PDF rendering and PSD images. Common image conversions work without it. Import the pack supplied with this build. Checksums must match before anything is installed.</p><button class="btn" id="importEngines">Import engine pack…</button><p id="engineMessage" role="status"></p></section>
+
   </div>
   <div id="catalogue" hidden>
   <div class="feature-toolbar"><label class="feature-search">Find a feature<input id="featureSearch" type="search" placeholder="Try PDF, rotate, fonts…" autocomplete="off"></label><button class="btn primary" id="enableAll">Enable all app features</button></div>
@@ -331,6 +332,8 @@ svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-widt
 <script src="../features.js"></script>
 <script src="disc.js"></script>
 <script src="palette.js"></script>
+<dialog id="enginePicker" class="workflow-dialog" aria-labelledby="enginePickerTitle"><form method="dialog"><h2 id="enginePickerTitle">What will you convert?</h2><p>Images, documents, spreadsheets and data are ready now. Pick anything else you want; you can change this any time in Settings → Engines.</p><div id="enginePickList"></div><footer><button class="btn" value="skip">Not now</button><button class="btn primary" value="install" id="enginePickInstall">Install selected</button></footer></form></dialog>
+<dialog id="whatsNew" class="workflow-dialog" aria-labelledby="whatsNewTitle"><form method="dialog"><h2 id="whatsNewTitle">What’s new</h2><ul id="whatsNewList" class="whats-new-list"></ul><footer><button class="btn primary" value="ok">Got it</button></footer></form></dialog>
 <script src="feature-settings.js"></script>
 <script src="workflows.js"></script>
 <script src="app.js"></script>

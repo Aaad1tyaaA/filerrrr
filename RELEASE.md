@@ -1,45 +1,50 @@
-# Filerrrr unsigned releases
+# Filerrrr releases
 
-Filerrrr is an `.exe` desktop GUI. Users do not need to create an account, sign in, or use an AI service.
+Filerrrr is a Windows desktop app (an `.exe`). No account, no sign-in, no AI service. Releases are unsigned by choice: Windows may show an "unknown publisher" warning on install.
 
-The user has chosen not to purchase a signing certificate. Version 1.2.3 is intentionally unsigned; a paid certificate is not a prerequisite or an outstanding purchase task. Windows may show an unknown-publisher or SmartScreen warning.
+## 1.3.0
 
-## Hosting
+| File | What it is |
+|---|---|
+| `Filerrrr-1.3.0-Setup.exe` (~111 MB) | Installer: for this user (no admin) or for all users (admin). |
+| `Filerrrr-1.3.0-win.zip` (~161 MB) | Portable copy: unzip and run `Filerrrr.exe`. |
 
-Installer repository: https://github.com/Aaad1tyaaA/filerrrr-releases
+### Engines
 
-Version 1.2.3 uses manual downloads from Releases. Installer, blockmap, SHA256 checksums and dependency notices are published together after validation. No stable `latest.yml` is published for unsigned builds.
+The installer carries everything for images, documents, spreadsheets, PDFs (text), data, archives and fonts. Three larger engines are optional:
 
-## Optional publisher signing
+| Engine | Download | Official source |
+|---|---|---|
+| Video & audio (FFmpeg) | ~28 MB | `github.com/eugeneware/ffmpeg-static` release `b6.1.1` |
+| PDF pages & Photoshop (Skia canvas) | ~15 MB | npm `@napi-rs/canvas-win32-x64-msvc` |
+| Scanned text recognition (Tesseract.js + English model) | ~29 MB | npm `tesseract.js-core`, `@tesseract.js-data/eng` |
 
-The normal build works without signing credentials: run `npm ci`, then `npm run dist` on Windows with Visual Studio C++ Build Tools and the Windows SDK. No self-signed certificate or security-setting change is used to disguise the unsigned build.
+- **Choosing:** Setup's "Choose conversion engines" page (fresh installs; small ones pre-ticked), the first-run question when nothing was chosen in Setup, and Settings → Engines at any time (install, cancel, remove).
+- **Downloading:** at first start, in the background, one engine after another, with a Windows notification when each is ready. Nothing is hosted by Filerrrr.
+- **Checking:** `engine-pack-manifest.json` pins each official archive (URL, size, SHA256) and every file inside it. A download that differs by one byte is discarded. `npm run engines` rebuilds the manifest and fails if an official file differs from the tested copy.
+- **Found on this PC:** an FFmpeg on `PATH` with the encoders Filerrrr needs (libx264, libmp3lame, libopus, libvpx-vp9) is used instead of downloading one.
+- **Offline PCs:** Settings → Engines → "Install from a downloaded pack…" accepts the `release/engines/Filerrrr-Engine-*.zip` files, checked the same way.
+- **Updates and uninstall:** engines live in `%APPDATA%\Filerrrr\engines`, so updates keep them; a real uninstall removes them (settings and history stay).
 
-The following signing tools are optional development infrastructure, outside the current unsigned delivery. They are not required to build, install or use Filerrrr.
+### Also new
 
-Once a real issued certificate is accessible in `CurrentUser\My`, set `FILERRRR_SIGNING_THUMBPRINT` to its thumbprint and run:
+- Best quality is the default (lossless WEBP from lossless sources, 4:4:4 JPG, 320 kbps audio, 300 dpi PDF pages). Profiles still on the old untouched defaults move to Best once.
+- Results say where the file was saved; the taskbar shows progress and flashes when a conversion finishes in the background.
+- PDF → DOCX / Markdown / TXT / HTML works without any engine for PDFs that contain text.
+- "What's new" appears once after an update (`whats-new.json`).
+- New Dot F logo and installer artwork.
+
+## Building
 
 ```powershell
-powershell -NoProfile -File scripts/build-signed-release.ps1
+npm ci
+npm test                 # Node tests
+npm run test:electron    # Electron checks
+npm run dist             # engines manifest, Setup and portable ZIP in release/
 ```
 
-The script checks certificate validity, key availability and code-signing usage, aligns the Explorer MSIX publisher, signs and verifies that package, and builds with `forceCodeSigning`. The builder puts the full certificate subject into the update configuration and signs the app/installer. The script verifies those outputs and uploads nothing. The real certificate/HSM path still needs end-to-end validation after issuance.
+Needs Windows with Visual Studio C++ Build Tools and the Windows SDK (for the Explorer menu and drop-target DLLs). `npm run dist:full` builds an older-style installer with every engine inside.
 
-## Update behavior
+## Updates
 
-Settings shows manual updates and an Open releases button. Download the latest installer and run it when ready. Certificate-waiting messages and unavailable automatic-update controls are hidden. There is no background update download or automatic installation in an unsigned build.
-
-The dormant signed-updater path still requires a matching embedded publisher identity and a valid Windows signature; its protections have not been disabled to allow unsigned automatic installation. Unavailable verification, malformed responses or a different publisher fail closed.
-
-If signed distribution is chosen in the future, build and test the signed installer before publishing update metadata. Test an update from an older signed installation; mock update tests do not establish a real signed upgrade. This is not a gate for the current unsigned manual-download release.
-
-Signing helps identify the publisher and build reputation; it does not guarantee that SmartScreen warnings disappear on the first download. A validly signed Explorer MSIX uses normal per-user registration; the unsigned fallback still asks for administrator approval.
-
-## Current verification
-
-87 Node tests and 17 Electron checks pass, including the unsigned manual-update path. Packaged executable and finished-installer checks are recorded separately under `D:\filerrrr\.tools\unsigned-1.2.3-*`. Historical 1.2.2 validation remains in the earlier evidence files.
-
-The finished Full installer is `release/Filerrrr-Setup-1.2.3.exe`, 208,134,079 bytes (198.49 MiB). Its 52 runtime files and native drop DLL match the current source; Windows reports `NotSigned`, as intended. SHA256: `a413ae03e4cb1132ef915a39c862b6aecbdd8e19b65c013206c704cc1a683b05`. The prepared executable passes actual worker conversion and whole-app manual-update/conversion checks.
-
-On 12 November 2026, the user confirmed successful physical Ctrl+drag conversion on both monitors. This is recorded as user-confirmed acceptance, separate from the automated two-display placement checks. Follow-up inspection of the isolated fixture folder found the original sample but no HTML output, recorded history or gesture trace, so the physical result was not independently verified from those artifacts.
-
-References: https://shop.certum.eu/standard-code-signing-in-the-cloud.html and https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/smartscreen-reputation
+Manual: Settings shows "Open releases". Download the new Setup and run it; settings, history and engines are kept. There is no automatic installation for unsigned builds.

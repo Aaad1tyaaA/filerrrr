@@ -20,7 +20,7 @@ async function open(input) {
 
 async function renderPage(page, scale) {
   Job.check(); const signal=Job.currentSignal(); let render;
-  if(!require('../engine-packs.cjs').status().canvas)throw new Error('Import the engine pack in Settings for PDF image rendering');
+  if(!require('../engine-packs.cjs').status().canvas)throw new Error('Install PDF pages & Photoshop in Settings → Engines to export pages as images');
   canvasModule||=require(unpacked(require.resolve('@napi-rs/canvas')));const { createCanvas } = canvasModule;
   const base = page.getViewport({ scale: 1 });
   scale = Math.min(scale, Math.sqrt(24000000 / (base.width * base.height)), 16000 / Math.max(base.width, base.height));
@@ -35,9 +35,9 @@ async function renderPage(page, scale) {
   } finally { canvas.width = canvas.height = 0; }
 }
 
-// One picture per page at 144 dpi: name.png for a single page, name-p1.png … for more.
+// One picture per page at 300 dpi by default: name.png for a single page, name-p1.png … for more.
 function exportOptions(options = {}) {
-  return { dpi: [72, 144, 216, 300].includes(options?.dpi) ? options.dpi : 144,
+  return { dpi: [72, 144, 216, 300].includes(options?.dpi) ? options.dpi : 300,
     quality: Number.isInteger(options?.quality) && options.quality >= 50 && options.quality <= 100 ? options.quality : 90,
     ocr: options?.ocr !== false };
 }

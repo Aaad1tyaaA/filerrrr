@@ -6,7 +6,7 @@ test('preferences migrate safely and persist only supported output, quality and 
   assert.equal(store.data.preferences.destination,'original');
   store.set({preferences:Preferences.sanitize({destination:'chosen',folder:dir,image:'best',audio:320,trigger:'alt',shortcut:'off',collision:'replace'})});store.flush();
   const saved=createStore(file).data.preferences;assert.equal(saved.folder,dir);assert.equal(saved.trigger,'alt');
-  assert.equal(Preferences.sanitize({folder:'../escape',audio:Infinity,image:'invalid'}).folder,'');assert.equal(Preferences.sanitize({audio:Infinity}).audio,192);
+  assert.equal(Preferences.sanitize({folder:'../escape',audio:Infinity,image:'invalid'}).folder,'');assert.equal(Preferences.sanitize({audio:Infinity}).audio,320);
 });
 test('folder expansion is shallow, deterministic, deduplicated, and ignores unsupported files and linked folders',async()=>{
   const folder=path.join(dir,'input');fs.mkdirSync(folder);fs.writeFileSync(path.join(folder,'b.json'),'{}');fs.writeFileSync(path.join(folder,'a.csv'),'x\n1');fs.writeFileSync(path.join(folder,'unknown.xyz'),'x');fs.mkdirSync(path.join(folder,'nested'));fs.writeFileSync(path.join(folder,'nested','deep.txt'),'x');
@@ -55,8 +55,25 @@ test('image presets change encoded size and media presets preserve lossless audi
 });
 test('engine packs reject unapproved manifests and checksum mismatches before publishing executables',async()=>{
   const packs=require('../engine-packs.cjs'),JSZip=require('jszip'),zip=new JSZip(),root=path.join(dir,'engines');packs.configure(root);
-  zip.file('filerrrr-engine-pack.json',JSON.stringify({version:1,platform:'win32-x64',files:[]}));const bad=path.join(dir,'bad-pack.zip');fs.writeFileSync(bad,await zip.generateAsync({type:'nodebuffer'}));
-  await assert.rejects(packs.install(bad),/not approved/);assert.ok(!fs.existsSync(path.join(root,'ffmpeg.exe')));
-  const expected=require('../engine-pack-manifest.json'),tampered=new JSZip();tampered.file('filerrrr-engine-pack.json',JSON.stringify(expected));tampered.file(expected.files[0].path,'tampered');fs.writeFileSync(bad,await tampered.generateAsync({type:'nodebuffer'}));
+  zip.file('filerrrr-engine-pack.json',JSON.stringify({version:2,platform:'win32-x64',pack:'media',files:[]}));const bad=path.join(dir,'bad-pack.zip');fs.writeFileSync(bad,await zip.generateAsync({type:'nodebuffer'}));
+  await assert.rejects(packs.install(bad),/does not match/);assert.ok(!fs.existsSync(path.join(root,'ffmpeg.exe')));
+  const expected=require('../engine-pack-manifest.json').packs.media,tampered=new JSZip();tampered.file('filerrrr-engine-pack.json',JSON.stringify({version:2,platform:'win32-x64',pack:'media',files:expected.files}));tampered.file(expected.files[0].path,'tampered');fs.writeFileSync(bad,await tampered.generateAsync({type:'nodebuffer'}));
   await assert.rejects(packs.install(bad),/checksum/);assert.ok(!fs.existsSync(path.join(root,'ffmpeg.exe')));
+});
+test('engine packs download one at a time, verify the whole ZIP, install and remove',async()=>{
+  const packs=require('../engine-packs.cjs'),http=require('http'),root=path.join(dir,'engines-dl');packs.configure(root);
+  const manifest=require('../engine-pack-manifest.json'),name=manifest.packs.render.sources[0].url.split('/').pop();// the official npm tarball, served locally
+  let body=fs.readFileSync(path.join(__dirname,'..','release','engines','official',name));
+  const server=http.createServer((req,res)=>{if(!req.url.endsWith(name)){res.writeHead(404);return res.end();}res.writeHead(200,{'content-length':body.length});res.end(body);});
+  await new Promise(r=>server.listen(0,'127.0.0.1',r));process.env.FILERRRR_ENGINE_BASE_URL=`http://127.0.0.1:${server.address().port}/`;
+  try{
+    const seen=[];const status=await packs.download('render',{onProgress:f=>seen.push(f)});
+    assert.ok(fs.existsSync(path.join(root,'canvas','skia.win32-x64-msvc.node')));assert.equal(seen.at(-1),1);
+    assert.ok(status.packs.find(p=>p.id==='render').size>0);
+    const builtIn=status.packs.find(p=>p.id==='render').builtIn;// a development checkout ships the engine inside node_modules
+    const removed=builtIn?(await assert.rejects(packs.remove('render'),/built into/),{restartNeeded:true}):await packs.remove('render');assert.ok(!fs.existsSync(path.join(root,'canvas'))||removed.restartNeeded);
+    body=Buffer.from(body);body[body.length-10]^=0xff;// one flipped byte must be refused
+    await assert.rejects(packs.download('render'),/damaged/);assert.ok(!fs.existsSync(path.join(root,'canvas','skia.win32-x64-msvc.node'))||removed.restartNeeded);
+    await assert.rejects(packs.download('nope'),/Unknown/);
+  }finally{delete process.env.FILERRRR_ENGINE_BASE_URL;server.close();}
 });

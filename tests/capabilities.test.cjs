@@ -39,7 +39,7 @@ test('preflight checks damage, missing files, mixed content and feature flags', 
 });
 test('PDF export resolution is configurable and invalid settings fall back safely', async () => {
   const { exportOptions } = require('../engines/pdf.cjs');
-  assert.deepEqual(exportOptions({dpi:Infinity,quality:'100'}), {dpi:144,quality:90,ocr:true});
+  assert.deepEqual(exportOptions({dpi:Infinity,quality:"100"}), {dpi:300,quality:90,ocr:true});
   assert.deepEqual(exportOptions({dpi:300,quality:70,ocr:false}), {dpi:300,quality:70,ocr:false});
   const sharp = require('sharp');
   const [small] = await run([text], 'formats', 'PNG', () => {}, {dpi:72});

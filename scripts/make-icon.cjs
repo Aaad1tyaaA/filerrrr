@@ -1,10 +1,8 @@
-// Renders build/icon.png (512 px) and build/icon.ico: Filerrrr's mark, a ring of 12 dots with 4 lit in the accent.
+// Renders build/icon.png (512 px) and build/icon.ico: Filerrrr's mark, a dot-matrix F (4 x 5 grid) with one accent dot.
 const sharp = require('sharp'), path = require('path'), fs = require('fs');
-const S = 512, c = S / 2, dots = [];
-for (let i = 0; i < 12; i++) {
-  const a = i / 12 * Math.PI * 2 - Math.PI / 2, on = i < 4;
-  dots.push(`<circle cx="${(c + Math.cos(a) * 158).toFixed(1)}" cy="${(c + Math.sin(a) * 158).toFixed(1)}" r="${on ? 38 : 28}" fill="${on ? '#ff5c38' : '#ededec'}" opacity="${on ? 1 : .6}"/>`);
-}
+const S = 512, GAP = 80, R = 27, X0 = S / 2 - 1.5 * GAP, Y0 = S / 2 - 2 * GAP;
+const F = ['####', '#...', '###*', '#...', '#...']; // # lit, * accent, . unlit
+const dots = F.flatMap((row, y) => [...row].map((cell, x) => `<circle cx="${X0 + x * GAP}" cy="${Y0 + y * GAP}" r="${R}" fill="${cell === '*' ? '#ff5c38' : '#ededec'}" opacity="${cell === '.' ? .13 : 1}"/>`));
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${S}" height="${S}">
   <rect width="${S}" height="${S}" rx="116" fill="#141416"/>${dots.join('')}</svg>`;
 fs.mkdirSync(path.join(__dirname, '..', 'build'), { recursive: true });

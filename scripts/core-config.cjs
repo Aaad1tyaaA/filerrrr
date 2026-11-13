@@ -1,5 +1,5 @@
 const fs=require('fs'),path=require('path'),{build}=require('../package.json');
-const config={...build,compression:'maximum',directories:{...build.directories,output:'release-core'},nsis:{...build.nsis,differentialPackage:false,artifactName:'Filerrrr-Core-Setup-${version}.${ext}'},files:[...build.files,
+const config={...build,compression:'maximum',directories:{...build.directories,output:'release'},nsis:{...build.nsis,differentialPackage:false},files:[...build.files,
   '!node_modules/@napi-rs/canvas-win32-x64-msvc/*.node','!node_modules/@napi-rs/canvas-win32-x64-msvc/icudtl.dat',
   '!node_modules/**/.v8-cache/**','!node_modules/**/docimages/**','!node_modules/**/.yarn/**','!node_modules/**/test/**','!node_modules/**/tests/**',
   '!node_modules/exceljs/dist/**','!node_modules/pdf-lib/dist/**','!node_modules/ag-psd/dist/**','!node_modules/libheif-js/libheif-wasm/**',
