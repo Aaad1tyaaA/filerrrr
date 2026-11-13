@@ -508,7 +508,7 @@ app.on('before-quit', () => { quitting = true;updates?.stop();watcher?.stop();ac
 app.whenReady().then(() => {
   app.setAppUserModelId('com.filerrrr.app');
   logFile = path.join(app.getPath('userData'), 'filerrrr.log');
-  store = createStore(path.join(app.getPath('userData'), 'filerrrr.json'));
+  store = createStore(path.join(app.getPath('userData'), 'filerrrr.json'), error => log('settings save failed', error));
   updates=require('./updates.cjs').create({packaged:app.isPackaged,config:require('./updates.cjs').readConfig(process.resourcesPath),notify:state=>send(win,'updates:status',state),log});updates.start(store.data.automaticUpdates&&!testProfile);
   require('./engine-packs.cjs').configure(path.join(app.getPath('userData'),'engines'));
   require('./engines/extended.cjs').configure(store.data.external);

@@ -21,6 +21,10 @@ $previousDebug=$env:FILERRRR_DEBUG
 $proc=$null
 try {
 $env:FILERRRR_TEST_DATA_DIR = Join-Path $work 'profile'
+# fixed ring order: no favourites ring and nothing learned between cases; no first-run dialogs
+New-Item -ItemType Directory $env:FILERRRR_TEST_DATA_DIR | Out-Null
+$version = (Get-Content (Join-Path $app 'package.json') -Raw | ConvertFrom-Json).version
+('{"enginesOffered":true,"onboarding":true,"menuOffered":true,"lastVersion":"' + $version + '","preferences":{"learn":false,"favourites":false}}') | Set-Content -Encoding ascii (Join-Path $env:FILERRRR_TEST_DATA_DIR 'filerrrr.json')
 $env:FILERRRR_DEBUG = $trace
 if ($Exe) { $proc = Start-Process $Exe -ArgumentList '--hidden' -PassThru }
 else { $proc = Start-Process (Join-Path $app 'node_modules\electron\dist\electron.exe') -ArgumentList "`"$app`"", '--hidden' -PassThru }
@@ -41,8 +45,11 @@ foreach ($c in $cases) {
   $before = @(Get-ChildItem $work -File | Where-Object Name -ne 'trace.log' | ForEach-Object Name)
   $a = $c.args
   & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'drag.ps1') -Folder $work -Name 'poster.png' @a
-  Start-Sleep 4
-  $new = @(Get-ChildItem $work -File | Where-Object { $_.Name -ne 'trace.log' -and $before -notcontains $_.Name } | ForEach-Object Name)
+  # wait for the output (PDF can take several seconds), then a moment more so nothing spills into the next case
+  $listNew = { @(Get-ChildItem $work -File | Where-Object { $_.Name -ne 'trace.log' -and $before -notcontains $_.Name } | ForEach-Object Name) }
+  for ($t = 0; $t -lt 30 -and @(& $listNew).Count -eq 0; $t++) { Start-Sleep -Milliseconds 500 }
+  Start-Sleep 2
+  $new = @(& $listNew)
   $ok = if ($c.expect) { $new.Count -eq 1 -and $new[0] -eq $c.expect } else { $new.Count -eq 0 }
   if ($ok) { "PASS  $($c.name)" } else { $failed++; "FAIL  $($c.name): expected $($c.expect), got [$($new -join ', ')]" }
   $new | ForEach-Object { Remove-Item (Join-Path $work $_) }

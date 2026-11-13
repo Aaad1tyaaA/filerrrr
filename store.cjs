@@ -28,7 +28,7 @@ function sanitize(raw) {
   return d;
 }
 
-function createStore(file) {
+function createStore(file, onError = () => {}) {
   let data;
   try { data = sanitize(JSON.parse(fs.readFileSync(file, 'utf8'))); } catch { data = sanitize(null); }
   let timer = null;
@@ -40,7 +40,7 @@ function createStore(file) {
   };
   return {
     get data() { return data; },
-    set(patch) { data = sanitize({ ...data, ...patch }); clearTimeout(timer); timer = setTimeout(() => { try { flush(); } catch { /* retried on next change */ } }, 200); },
+    set(patch) { data = sanitize({ ...data, ...patch }); clearTimeout(timer); timer = setTimeout(() => { try { flush(); } catch (error) { onError(error); /* retried on next change and on quit */ } }, 200); },
     flush,
   };
 }
