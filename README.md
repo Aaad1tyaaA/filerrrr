@@ -1,34 +1,39 @@
 # Filerrrr
 
-An English-only Windows desktop app for local file conversion. The GUI includes the matrix palette, Explorer integration, progress and cancellation, result actions, output preferences, presets, watch folders and focused image/media/PDF editors. A public command-line interface and AI tools are outside the current product scope.
+Convert files on your PC without uploading them anywhere. Hold **Ctrl**, drag a file in File Explorer, and pick a format on the palette that opens at your cursor. Or right-click a file → **Convert with Filerrrr**.
 
-## Develop
+**[Download for Windows](https://github.com/Aaad1tyaaA/filerrrr-releases/releases/latest)** · [Website](https://aaad1tyaaa.github.io/filerrrr/)
 
-Use Windows x64 with Node.js, npm, Visual Studio C++ Build Tools and the Windows SDK.
+- Images, PDFs, Word/Excel/PowerPoint, Markdown, data (JSON, YAML, CSV…), archives, fonts, video and audio
+- Best quality by default; originals are never changed; Undo sends results to the Recycle Bin
+- Optional engines (video & audio, PDF pages & Photoshop, scanned-text recognition) download only if you want them, from their official sources, checked by SHA256
+- Presets, watch folders, crop / trim / PDF-page editors, batch conversion with cancel
+- Works offline; no account, no telemetry
+
+Windows 10/11 x64. The installer is not code-signed, so Windows may show an "unknown publisher" warning.
+
+## Build from source
+
+Windows x64 with Node.js 22+, Visual Studio C++ Build Tools and the Windows SDK.
 
 ```powershell
 npm ci
-npm run native
-npm run menu
+npm run native      # drop-target DLL
+npm run menu        # Windows 11 Explorer menu DLL and package
 npm start
 ```
 
-Source is self-contained in this folder; the retired .NET projects are not needed. Generated installers, dependencies, native build outputs, logs and credentials are excluded from Git. `package-lock.json` records JavaScript dependency versions. Build the native DLLs again after a fresh checkout.
-
-## Verify and package
+Tests and packaging:
 
 ```powershell
-npm test
-npm run test:electron
-npm run test:app
-npm run dist
-npm run test:packaged
-node tests/packaged-worker.cjs
-node tests/installer-payload.cjs release/Filerrrr-Setup-1.2.3.exe
+npm test                 # Node tests
+npm run test:electron    # Electron checks
+npm run test:e2e         # real Ctrl+drag from Explorer (moves the mouse for ~2 minutes)
+npm run dist             # Setup, portable ZIP and engine manifest in release/
 ```
 
-The Full installer includes the bundled offline engines. Core uses the matching, checksum-verified engine ZIP for media, OCR, PDF rendering and PSD support. Additional-format applications such as LibreOffice, Calibre, ImageMagick and rhwp are separate and can be connected in Settings. The built-in PPTX fallback exports slide text; advanced CAD coverage is limited.
+See [RELEASE.md](RELEASE.md) for how engines are pinned and verified. Third-party notices are in `THIRD-PARTY-NOTICES.txt`.
 
-Loose-file packaging is intentional: previous packaged measurements found lower idle memory with this layout. Turning ASAR on requires fresh packaged native-module, PDF/OCR, worker and engine-pack tests. An archive is not a security boundary or code signing.
+## Licence
 
-Installer hosting is configured at [Filerrrr Releases](https://github.com/Aaad1tyaaA/filerrrr-releases/releases). Version 1.2.3 is intentionally unsigned, with manual downloads for updates. No paid certificate or app account is required. See [RELEASE.md](RELEASE.md) for build instructions, validation and Windows warning limitations. Development source has no remote Git repository configured. Third-party notices are bundled in `THIRD-PARTY-NOTICES.txt`; dependency licence files remain with the installed packages.
+[MIT](LICENSE)
