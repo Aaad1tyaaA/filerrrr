@@ -7,177 +7,229 @@
 <meta name="description" content="Free Windows app: hold Ctrl, drag a file, pick a format. Images, PDFs, documents, video and audio, converted on your PC at best quality. Nothing is uploaded.">
 <meta property="og:title" content="Filerrrr — convert files right where they are">
 <meta property="og:description" content="Hold Ctrl, drag a file, pick a format. Converted on your PC, nothing uploaded.">
-<meta property="og:image" content="https://aaad1tyaaa.github.io/filerrrr/assets/palette.png">
+<meta property="og:image" content="https://aaad1tyaaa.github.io/filerrrr/assets/shots/explorer-palette.webp">
 <link rel="icon" href="assets/favicon.png">
 <style>
 :root{--bg:#0e0e0f;--surface:#161618;--surface-2:#1d1d20;--line:rgba(255,255,255,.08);--ink:#ededec;--ink-2:#a3a3a0;--ink-3:#6e6e6b;--acc:#ff5c38;--ok:#6ed696;
   --ui:'Segoe UI Variable Text','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;--display:'Segoe UI Variable Display','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;--mono:'Cascadia Mono',Consolas,ui-monospace,monospace;--ease:cubic-bezier(.2,.8,.2,1)}
 *{box-sizing:border-box}html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--ui);-webkit-font-smoothing:antialiased}
-a{color:inherit}
-.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+a{color:inherit}img,video{display:block;max-width:100%;height:auto}
+.wrap{max-width:1160px;margin:0 auto;padding:0 24px}
 header{position:sticky;top:0;z-index:5;backdrop-filter:blur(14px);background:color-mix(in srgb,var(--bg) 82%,transparent);border-bottom:1px solid var(--line)}
 .nav{display:flex;align-items:center;gap:20px;height:60px}
 .brand{display:flex;align-items:center;gap:10px;font:600 18px var(--display);text-decoration:none}
 .brand img{width:26px;height:26px;border-radius:7px}
 .nav .links{margin-left:auto;display:flex;gap:22px;font-size:14.5px;color:var(--ink-2)}
 .nav .links a{text-decoration:none}.nav .links a:hover{color:var(--ink)}
-.btn{display:inline-flex;align-items:center;gap:10px;padding:13px 22px;border-radius:12px;font:600 15.5px var(--ui);text-decoration:none;border:1px solid var(--line);background:var(--surface-2);transition:transform .2s var(--ease),background .2s,box-shadow .2s}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:13px 22px;border-radius:12px;font:600 15.5px var(--ui);text-decoration:none;border:1px solid var(--line);background:var(--surface-2);transition:transform .2s var(--ease),background .2s}
 .btn:hover{transform:translateY(-1px);background:#26262a}
-.btn.primary{background:var(--acc);border-color:transparent;color:#fff;box-shadow:0 10px 30px -12px rgba(255,92,56,.8)}
-.btn.primary:hover{background:#ff6e4d}
+.btn.primary{background:var(--acc);border-color:transparent;color:#fff;box-shadow:0 10px 30px -12px rgba(255,92,56,.8)}.btn.primary:hover{background:#ff6e4d}
 .btn svg{width:18px;height:18px}
-.hero{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center;padding:72px 0 40px}
+.hero{text-align:center;padding:72px 0 30px}
 .eyebrow{display:inline-flex;align-items:center;gap:8px;font:600 12.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--acc)}
 .eyebrow i{width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 10px var(--acc)}
-h1{font:600 clamp(40px,6vw,66px)/1.04 var(--display);letter-spacing:-.03em;margin:16px 0 18px}
+h1{font:600 clamp(40px,6.4vw,72px)/1.03 var(--display);letter-spacing:-.03em;margin:16px auto 18px;max-width:14em}
 h1 em{font-style:normal;color:var(--acc)}
-.lede{font-size:19px;color:var(--ink-2);max-width:34em;margin:0 0 30px}
-.cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.lede{font-size:19px;color:var(--ink-2);max-width:36em;margin:0 auto 30px}
+.cta{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
 .meta{margin-top:16px;font-size:13.5px;color:var(--ink-3)}
-.shot{position:relative;display:grid;place-items:center}
-.shot::before{content:"";position:absolute;inset:8% 6%;border-radius:50%;background:radial-gradient(circle,rgba(255,92,56,.22),transparent 65%);filter:blur(20px)}
-.shot img{position:relative;width:min(100%,520px);height:auto;animation:float 7s ease-in-out infinite}
-@keyframes float{50%{transform:translateY(-8px)}}
-section{padding:72px 0}
-h2{font:600 clamp(28px,3.6vw,40px)/1.15 var(--display);letter-spacing:-.02em;margin:0 0 12px}
+.frame{position:relative;margin:46px auto 0;max-width:1080px;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:#000;box-shadow:0 40px 120px -40px rgba(255,92,56,.45),0 20px 60px -30px #000}
+.frame video{width:100%}
+.frame .badge{position:absolute;left:14px;bottom:14px;font:600 12px var(--mono);background:rgba(0,0,0,.7);backdrop-filter:blur(6px);padding:6px 10px;border-radius:8px;color:var(--ink-2)}
+section{padding:84px 0}
+.kicker{font:600 12.5px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--acc);margin-bottom:10px}
+h2{font:600 clamp(28px,3.6vw,42px)/1.12 var(--display);letter-spacing:-.02em;margin:0 0 12px}
 .sub{color:var(--ink-2);font-size:17px;max-width:40em;margin:0 0 36px}
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;counter-reset:s}
-.step{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px}
-.step::before{counter-increment:s;content:"0" counter(s);font:600 13px var(--mono);color:var(--acc)}
-.step h3{font:600 19px var(--display);margin:10px 0 6px}.step p{margin:0;color:var(--ink-2);font-size:15px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;margin-bottom:72px}
+.row.flip>.text{order:2}
+.row:last-child{margin-bottom:0}
+.text h3{font:600 26px/1.2 var(--display);letter-spacing:-.01em;margin:8px 0 10px}
+.text p{color:var(--ink-2);margin:0 0 14px}
+.step{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:rgba(255,92,56,.14);color:var(--acc);font:600 14px var(--mono)}
+.shot{border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--surface);box-shadow:0 24px 70px -36px #000}
+.shot.bare{border:0;background:none;box-shadow:none}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:end}
+.pair figure{margin:0}
+figcaption{font-size:13px;color:var(--ink-3);margin-top:8px;text-align:center}
 kbd{font:600 12.5px var(--ui);padding:2px 7px;border-radius:6px;border:1px solid rgba(255,255,255,.16);border-bottom-width:2px;background:var(--surface-2);color:var(--ink)}
-.split{display:grid;grid-template-columns:.9fr 1.1fr;gap:48px;align-items:center}
-.split img{width:min(100%,430px);height:auto;justify-self:center}
-.checks{list-style:none;padding:0;margin:0;display:grid;gap:14px}
-.checks li{display:grid;grid-template-columns:22px 1fr;gap:12px;color:var(--ink-2)}
+.keys{display:grid;gap:10px;margin:16px 0 0;padding:0;list-style:none}
+.keys li{color:var(--ink-2);font-size:15px}
+.checks{list-style:none;padding:0;margin:0;display:grid;gap:12px}
+.checks li{display:grid;grid-template-columns:22px 1fr;gap:10px;color:var(--ink-2)}
 .checks li b{color:var(--ink);font-weight:600}
 .checks li::before{content:"";width:9px;height:9px;margin:8px 0 0 5px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px rgba(255,92,56,.7)}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px}
 .card h3{font:600 17px var(--display);margin:0 0 6px}.card p{margin:0;color:var(--ink-2);font-size:14.5px}
-.formats{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.formats{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .formats span{font:600 12.5px var(--mono);padding:6px 10px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
 table{width:100%;border-collapse:collapse;font-size:15px}
 th,td{text-align:left;padding:14px 12px;border-bottom:1px solid var(--line)}
 th{font:600 12.5px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
 td:last-child{color:var(--ink-2)}
-.tag{font:600 12px var(--mono);color:var(--ok)}
 details{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin-bottom:10px}
 summary{cursor:pointer;font-weight:600;list-style:none}summary::-webkit-details-marker{display:none}
 summary::after{content:"+";float:right;color:var(--ink-3);transition:transform .2s}details[open] summary::after{transform:rotate(45deg)}
 details p{color:var(--ink-2);margin:10px 0 0}
-.final{text-align:center;padding:90px 0}
+.final{text-align:center;padding:96px 0}
 .final h2{margin-bottom:24px}
 .dots{display:grid;grid-template-columns:repeat(4,12px);gap:7px;justify-content:center;margin:0 auto 26px}
-.dots i{width:12px;height:12px;border-radius:50%;background:var(--ink);opacity:.13}
-.dots i.on{opacity:1}.dots i.acc{background:var(--acc);opacity:1;box-shadow:0 0 12px var(--acc)}
+.dots i{width:12px;height:12px;border-radius:50%;background:var(--ink);opacity:.13}.dots i.on{opacity:1}.dots i.acc{background:var(--acc);opacity:1;box-shadow:0 0 12px var(--acc)}
 footer{border-top:1px solid var(--line);padding:28px 0;color:var(--ink-3);font-size:14px}
-footer .wrap{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between}
-footer a{color:var(--ink-2)}
-.reveal{opacity:0;transform:translateY(14px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
-.reveal.in{opacity:1;transform:none}
+footer .wrap{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between}footer a{color:var(--ink-2)}
+.reveal{opacity:0;transform:translateY(14px);transition:opacity .7s var(--ease),transform .7s var(--ease)}.reveal.in{opacity:1;transform:none}
+a.zoom{display:block;cursor:zoom-in}
 :focus-visible{outline:2px solid var(--acc);outline-offset:3px;border-radius:6px}
-@media (max-width:900px){.hero,.split{grid-template-columns:1fr}.hero{padding-top:44px}.steps,.grid{grid-template-columns:1fr}.nav .links a.hide{display:none}.shot{order:-1}.shot img{width:min(80%,380px)}}
+@media (max-width:900px){.row,.row.flip{grid-template-columns:1fr;gap:24px}.row.flip>.text{order:0}.grid{grid-template-columns:1fr}.nav .links a.hide{display:none}.pair{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
 </style>
 </head>
 <body>
 <header><div class="wrap nav">
   <a class="brand" href="#"><img src="assets/icon.png" alt="">Filerrrr</a>
-  <nav class="links" aria-label="Sections"><a class="hide" href="#how">How it works</a><a class="hide" href="#formats">Formats</a><a href="#faq">FAQ</a><a href="https://github.com/Aaad1tyaaA/filerrrr">Source</a></nav>
+  <nav class="links" aria-label="Sections"><a class="hide" href="#how">How it works</a><a class="hide" href="#app">The app</a><a class="hide" href="#engines">Engines</a><a href="#faq">FAQ</a><a href="https://github.com/Aaad1tyaaA/filerrrr">Source</a></nav>
 </div></header>
 
 <main>
 <div class="wrap hero">
-  <div>
-    <span class="eyebrow"><i></i>Free for Windows · works offline</span>
-    <h1>Convert files <em>right where they are.</em></h1>
-    <p class="lede">Hold <kbd>Ctrl</kbd>, drag a file, pick a format. Filerrrr converts it on your PC at best quality and saves it next to the original. Nothing is uploaded.</p>
-    <div class="cta">
-      <a class="btn primary" href="https://github.com/Aaad1tyaaA/filerrrr-releases/releases/latest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 21h14"/></svg>Download for Windows</a>
-      <a class="btn" href="#how">See how it works</a>
-    </div>
-    <p class="meta">Version 1.3.0 · Windows 10 and 11 (64-bit) · 111 MB · MIT licence</p>
+  <span class="eyebrow"><i></i>Free for Windows · works offline</span>
+  <h1>Convert files <em>right where they are.</em></h1>
+  <p class="lede">Hold <kbd>Ctrl</kbd>, drag a file in File Explorer, pick a format. Filerrrr converts it on your PC at best quality and saves it next to the original. Nothing is uploaded.</p>
+  <div class="cta">
+    <a class="btn primary" href="https://github.com/Aaad1tyaaA/filerrrr-releases/releases/latest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 21h14"/></svg>Download for Windows</a>
+    <a class="btn" href="#how">See how it works</a>
   </div>
-  <div class="shot"><img src="assets/palette.png" width="623" height="632" alt="The Filerrrr palette: a dark ring of formats around a dot-matrix display showing WEBP"></div>
+  <p class="meta">Windows 10 and 11 (64-bit) · 111 MB · free and open source (MIT)</p>
+  <div class="frame">
+    <video src="assets/shots/demo.mp4" poster="assets/shots/explorer-palette.webp" autoplay muted loop playsinline aria-label="Screen recording: a photo is Ctrl-dragged in File Explorer, the Filerrrr palette opens, JPG is chosen and the converted file appears next to the original"></video>
+    <span class="badge">Real recording · Windows 11</span>
+  </div>
 </div>
 
 <section id="how"><div class="wrap">
-  <h2 class="reveal">Three moves. No windows to open.</h2>
-  <p class="sub reveal">The palette appears at your cursor with only the formats that fit your file.</p>
-  <div class="steps">
-    <div class="step reveal"><h3>Hold Ctrl and drag</h3><p>Start dragging any file in File Explorer with <kbd>Ctrl</kbd> held. Or right-click → <b>Convert with Filerrrr</b>.</p></div>
-    <div class="step reveal"><h3>Aim at a format</h3><p>Point at JPG, PDF, MP3… or scroll the wheel, or type the first letters. <kbd>Tab</kbd> flips to tools like resize and compress.</p></div>
-    <div class="step reveal"><h3>Let go</h3><p>The new file appears next to the original. The result card tells you where, and Undo is one click away.</p></div>
+  <div class="kicker reveal">How it works</div>
+  <h2 class="reveal">Three moves. No window to open.</h2>
+  <p class="sub reveal">Filerrrr waits in the tray. When you need it, it appears at your cursor with only the formats that fit your file.</p>
+
+  <div class="row reveal">
+    <div class="text"><span class="step">1</span><h3>Hold Ctrl and drag a file</h3>
+      <p>Start dragging any file in File Explorer with <kbd>Ctrl</kbd> held. The palette opens right under your pointer, showing the formats that make sense for that file.</p>
+      <p>Prefer Alt, Shift or the right mouse button? Pick your trigger in Settings.</p></div>
+    <a class="zoom shot" href="assets/shots/explorer-palette.webp"><img src="assets/shots/explorer-palette.webp" width="1400" height="864" loading="lazy" alt="File Explorer with the Filerrrr palette open over a photo while dragging; JPG is highlighted"></a>
+  </div>
+
+  <div class="row flip reveal">
+    <div class="text"><span class="step">2</span><h3>Aim at a format, or pick a tool</h3>
+      <p>Move toward a format, or keep still and use the keyboard and wheel:</p>
+      <ul class="keys">
+        <li><kbd>Wheel</kbd> step through formats</li>
+        <li><kbd>A</kbd>–<kbd>Z</kbd> type the first letters, like <b>pd</b> for PDF</li>
+        <li><kbd>Tab</kbd> flip to tools: resize, compress, rotate, merge to PDF…</li>
+        <li>Let go of <kbd>Ctrl</kbd> to cancel and drop normally</li>
+      </ul></div>
+    <div class="pair">
+      <figure><img class="shot bare" src="assets/shots/palette-formats.webp" width="623" height="631" loading="lazy" alt="The palette's formats for a PNG: WEBP, JPG, AVIF, PDF, SVG, GIF, TIFF and More"><figcaption>Formats</figcaption></figure>
+      <figure><img class="shot bare" src="assets/shots/palette-tools.webp" width="623" height="632" loading="lazy" alt="The palette's tools: Merge to PDF, Half size, Upscale 2×, Square crop, Compress, Rotate, Flip, Grayscale, Clean metadata, Zip"><figcaption>Tools (Tab)</figcaption></figure>
+    </div>
+  </div>
+
+  <div class="row reveal">
+    <div class="text"><span class="step">3</span><h3>Let go. It's done.</h3>
+      <p>The new file appears next to the original, which is never touched. The card says exactly where it was saved, with <b>Open</b>, <b>Show in folder</b> and <b>Undo</b>.</p>
+      <p>Working in another window? The taskbar shows progress, and a notification tells you when it's finished.</p></div>
+    <a class="zoom shot" href="assets/shots/explorer-done.webp"><img src="assets/shots/explorer-done.webp" width="1400" height="864" loading="lazy" alt="File Explorer after converting: a green check on the palette, a card saying Conversion complete, and the new lake-and-blossom.jpg in the folder"></a>
+  </div>
+
+  <div class="row flip reveal">
+    <div class="text"><span class="step">+</span><h3>Or just right-click</h3>
+      <p>Select one or more files and choose <b>Convert with Filerrrr</b>, right at the top of the Windows 11 menu (and in Send to). The same palette opens, ready for a click.</p></div>
+    <a class="zoom shot" href="assets/shots/right-click.webp"><img src="assets/shots/right-click.webp" width="680" height="864" loading="lazy" alt="Windows 11 right-click menu on a photo with Convert with Filerrrr highlighted" style="max-height:560px;margin:auto"></a>
   </div>
 </div></section>
 
-<section><div class="wrap split">
-  <img class="reveal" src="assets/result.png" width="475" height="654" alt="A green check on the disc and a card saying Conversion complete, saved in the same folder, with Open file, Show in folder, Undo and Done">
-  <div class="reveal">
-    <h2>Careful with your files.</h2>
-    <p class="sub">Converting should never cost you anything you had.</p>
-    <ul class="checks">
-      <li><span><b>Originals stay untouched.</b> Results get their own name; nothing is overwritten unless you choose that.</span></li>
-      <li><span><b>Undo for 30 seconds.</b> Sends the new files to the Recycle Bin.</span></li>
-      <li><span><b>Best quality by default.</b> Lossless WEBP from screenshots, full-colour JPG, 320 kbps audio, 300 dpi PDF pages.</span></li>
-      <li><span><b>Clear results.</b> Every conversion says where the file went, with taskbar progress and a notification.</span></li>
-      <li><span><b>Private.</b> No account, no upload, no tracking. Works with the internet switched off.</span></li>
-    </ul>
-  </div>
-</div></section>
+<section id="app"><div class="wrap">
+  <div class="kicker reveal">The app</div>
+  <h2 class="reveal">Every conversion, in one place.</h2>
+  <p class="sub reveal">Open Filerrrr from the tray to see what you converted, how much space it saved, and to drop or browse for more files.</p>
+  <a class="zoom shot reveal" href="assets/shots/home.webp"><img src="assets/shots/home.webp" width="1502" height="1078" loading="lazy" alt="Filerrrr's home screen: the latest conversion with before and after sizes (72% smaller), a drop area and a history of converted files with thumbnails"></a>
 
-<section id="formats"><div class="wrap">
-  <h2 class="reveal">Everyday formats, done well.</h2>
-  <p class="sub reveal">Images, documents and data work the moment it's installed.</p>
-  <div class="grid">
-    <div class="card reveal"><h3>Images</h3><p>Photos, screenshots, iPhone HEIC, Photoshop files and icons.</p><div class="formats"><span>JPG</span><span>PNG</span><span>WEBP</span><span>AVIF</span><span>HEIC</span><span>GIF</span><span>TIFF</span><span>SVG</span><span>ICO</span><span>PSD</span></div></div>
-    <div class="card reveal"><h3>Documents &amp; PDF</h3><p>Turn PDFs into editable files and documents into PDFs; merge, split, number pages.</p><div class="formats"><span>PDF</span><span>DOCX</span><span>MD</span><span>HTML</span><span>TXT</span><span>EPUB</span><span>EML</span><span>PPTX</span></div></div>
-    <div class="card reveal"><h3>Video &amp; audio</h3><p>Convert, compress to 720p, trim, extract the sound, normalise loudness.</p><div class="formats"><span>MP4</span><span>WEBM</span><span>MOV</span><span>MKV</span><span>GIF</span><span>MP3</span><span>WAV</span><span>FLAC</span><span>M4A</span><span>OPUS</span></div></div>
-    <div class="card reveal"><h3>Spreadsheets &amp; data</h3><p>Between tables and data formats, with sheets kept apart.</p><div class="formats"><span>XLSX</span><span>CSV</span><span>TSV</span><span>JSON</span><span>YAML</span><span>TOML</span><span>XML</span></div></div>
-    <div class="card reveal"><h3>Archives &amp; fonts</h3><p>Pack into ZIP, unpack archives, convert web fonts.</p><div class="formats"><span>ZIP</span><span>TAR</span><span>7Z</span><span>TTF</span><span>OTF</span><span>WOFF2</span></div></div>
-    <div class="card reveal"><h3>Your own presets</h3><p>Save a recipe (format, width, name, folder) and run it from the palette, or point a watch folder at it.</p></div>
+  <div class="row reveal" style="margin-top:72px">
+    <div class="text"><h3>Clear progress, honest results</h3>
+      <p>A video converts with a live percentage and a Cancel button. When it's done the disc turns green and the card says where the file went. Undo sends it to the Recycle Bin for 30 seconds.</p>
+      <ul class="checks">
+        <li><span><b>Originals stay untouched.</b> Results get their own name.</span></li>
+        <li><span><b>Best quality by default.</b> Lossless WEBP from screenshots, full-colour JPG, 320 kbps audio, 300 dpi PDF pages.</span></li>
+        <li><span><b>Private.</b> No account, no upload, no tracking.</span></li>
+      </ul></div>
+    <div class="pair">
+      <figure><img class="shot" src="assets/shots/progress.webp" width="560" height="580" loading="lazy" alt="Converting a MOV video to WEBM, 83% with a Cancel button"><figcaption>Converting</figcaption></figure>
+      <figure><img class="shot" src="assets/shots/result.webp" width="560" height="650" loading="lazy" alt="Conversion complete card: saved in the Trip photos folder, original kept, with Open file, Show in folder, Undo and Done"><figcaption>Done</figcaption></figure>
+    </div>
+  </div>
+
+  <div class="row flip reveal">
+    <div class="text"><h3>See and shape what it can do</h3>
+      <p>Formats &amp; tools lists every route by file type. Hide what you never use and the palette gets shorter. Settings hold output folder, naming, quality, trigger and startup options.</p></div>
+    <a class="zoom shot" href="assets/shots/formats.webp"><img src="assets/shots/formats.webp" width="1502" height="1078" loading="lazy" alt="Formats and tools page listing conversions for images, video, audio and PDFs, each with an on/off switch"></a>
   </div>
 </div></section>
 
 <section id="engines"><div class="wrap">
+  <div class="kicker reveal">Engines</div>
   <h2 class="reveal">Install only what you need.</h2>
-  <p class="sub reveal">Three larger engines are optional. Pick them during setup or later in Settings. They download from their official sources and are checked byte for byte before use.</p>
-  <div class="reveal" style="overflow-x:auto"><table>
+  <p class="sub reveal">Images, documents, spreadsheets, PDFs with text, data, archives and fonts work right after installing. Three larger engines are optional. They download from their official sources and are checked byte for byte before use.</p>
+  <div class="reveal" style="overflow-x:auto;margin-bottom:44px"><table>
     <thead><tr><th>Engine</th><th>Download</th><th>Adds</th></tr></thead>
     <tbody>
-      <tr><td>Video &amp; audio</td><td>28 MB</td><td>All video and audio conversions (FFmpeg). Already have FFmpeg? Filerrrr uses it. <span class="tag">optional</span></td></tr>
-      <tr><td>PDF pages &amp; Photoshop</td><td>15 MB</td><td>PDF pages as JPG or PNG, and PSD files. <span class="tag">optional</span></td></tr>
-      <tr><td>Scanned text recognition</td><td>29 MB</td><td>Reads text from scans and photos of documents (English). <span class="tag">optional</span></td></tr>
+      <tr><td>Video &amp; audio</td><td>28 MB</td><td>All video and audio conversions (FFmpeg). Already have FFmpeg? Filerrrr uses it.</td></tr>
+      <tr><td>PDF pages &amp; Photoshop</td><td>15 MB</td><td>PDF pages as JPG or PNG, and PSD files.</td></tr>
+      <tr><td>Scanned text recognition</td><td>29 MB</td><td>Reads text from scans and photos of documents (English).</td></tr>
     </tbody>
   </table></div>
+  <div class="grid reveal">
+    <figure style="margin:0"><img class="shot" src="assets/shots/setup-engines.webp" width="503" height="302" loading="lazy" alt="Setup page Choose conversion engines with Video and audio and PDF pages and Photoshop ticked, Download: 43 MB"><figcaption>Pick them while installing…</figcaption></figure>
+    <figure style="margin:0"><img class="shot" src="assets/shots/picker.webp" width="702" height="580" loading="lazy" alt="First-run question What will you convert? with the three optional engines and their sizes"><figcaption>…on first start…</figcaption></figure>
+    <figure style="margin:0"><img class="shot" src="assets/shots/engines.webp" width="1502" height="820" loading="lazy" alt="Settings, Engines section with an Install button and size for each optional engine"><figcaption>…or any time in Settings.</figcaption></figure>
+  </div>
+</div></section>
+
+<section id="formats"><div class="wrap">
+  <div class="kicker reveal">Formats</div>
+  <h2 class="reveal">Everyday formats, done well.</h2>
+  <div class="grid" style="margin-top:28px">
+    <div class="card reveal"><h3>Images</h3><p>Photos, screenshots, iPhone HEIC, Photoshop files and icons.</p><div class="formats"><span>JPG</span><span>PNG</span><span>WEBP</span><span>AVIF</span><span>HEIC</span><span>GIF</span><span>TIFF</span><span>SVG</span><span>ICO</span><span>PSD</span></div></div>
+    <div class="card reveal"><h3>Documents &amp; PDF</h3><p>PDFs into editable files and documents into PDFs; merge, split, number pages.</p><div class="formats"><span>PDF</span><span>DOCX</span><span>MD</span><span>HTML</span><span>TXT</span><span>EPUB</span><span>EML</span><span>PPTX</span></div></div>
+    <div class="card reveal"><h3>Video &amp; audio</h3><p>Convert, compress to 720p, trim, extract the sound, normalise loudness.</p><div class="formats"><span>MP4</span><span>WEBM</span><span>MOV</span><span>MKV</span><span>GIF</span><span>MP3</span><span>WAV</span><span>FLAC</span><span>M4A</span><span>OPUS</span></div></div>
+    <div class="card reveal"><h3>Spreadsheets &amp; data</h3><p>Between tables and data formats, with sheets kept apart.</p><div class="formats"><span>XLSX</span><span>CSV</span><span>TSV</span><span>JSON</span><span>YAML</span><span>TOML</span><span>XML</span></div></div>
+    <div class="card reveal"><h3>Archives &amp; fonts</h3><p>Pack into ZIP, unpack archives, convert web fonts.</p><div class="formats"><span>ZIP</span><span>TAR</span><span>7Z</span><span>TTF</span><span>OTF</span><span>WOFF2</span></div></div>
+    <div class="card reveal"><h3>Presets &amp; watch folders</h3><p>Save a recipe (format, width, name, folder), run it from the palette, or let a watch folder convert everything that lands in it.</p></div>
+  </div>
 </div></section>
 
 <section id="faq"><div class="wrap">
   <h2 class="reveal">Questions</h2>
-  <details class="reveal"><summary>Windows says "unknown publisher". Is it safe?</summary><p>Filerrrr isn't code-signed, so Windows SmartScreen shows a warning the first time. Click <b>More info → Run anyway</b>. The installer's SHA256 checksum is published next to every download, and the full source code is on GitHub.</p></details>
+  <details class="reveal"><summary>Windows says "unknown publisher". Is it safe?</summary><p>Filerrrr isn't code-signed, so Windows SmartScreen shows a warning the first time. Click <b>More info → Run anyway</b>. Every download has a published SHA256 checksum, and the full source code is on GitHub.</p></details>
   <details class="reveal"><summary>Does it upload my files?</summary><p>No. Everything runs on your PC. The only time Filerrrr goes online is when you choose to download an optional engine.</p></details>
   <details class="reveal"><summary>What does it cost?</summary><p>Nothing. Filerrrr is free and open source under the MIT licence.</p></details>
-  <details class="reveal"><summary>How do I update?</summary><p>Download the newest Setup from the releases page and run it. Your settings, history and engines are kept, and a short "What's new" appears after updating.</p></details>
+  <details class="reveal"><summary>How do I update?</summary><p>Download the newest Setup from the releases page and run it. Settings, history and engines are kept, and a short "What's new" appears afterwards.</p></details>
   <details class="reveal"><summary>Does it work on Mac or Linux?</summary><p>Not yet. Filerrrr is for Windows 10 and 11 (64-bit).</p></details>
 </div></section>
 
 <section class="final"><div class="wrap">
   <div class="dots" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="acc"></i><i class="on"></i><i></i><i></i><i></i><i class="on"></i><i></i><i></i><i></i></div>
   <h2 class="reveal">Hold, drag, convert.</h2>
-  <a class="btn primary reveal" href="https://github.com/Aaad1tyaaA/filerrrr-releases/releases/latest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 21h14"/></svg>Download Filerrrr 1.3.0</a>
+  <a class="btn primary reveal" href="https://github.com/Aaad1tyaaA/filerrrr-releases/releases/latest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 21h14"/></svg>Download Filerrrr</a>
 </div></section>
 </main>
 
 <footer><div class="wrap">
-  <span>Filerrrr · MIT licence</span>
+  <span>Filerrrr · MIT licence · Screenshots and recording are from the real app on Windows 11</span>
   <span><a href="https://github.com/Aaad1tyaaA/filerrrr">Source</a> · <a href="https://github.com/Aaad1tyaaA/filerrrr-releases/releases">All releases</a> · <a href="https://github.com/Aaad1tyaaA/filerrrr/issues">Report a problem</a></span>
 </div></footer>
 
 <script>
-// fade sections in as they scroll into view
-const io = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .12 });
+const io = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .1 });
 document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 </script>
 </body>
